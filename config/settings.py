@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     # apps
     "accounts",
     "blog",
+    # third pary app
+    "django_ckeditor_5",
 ]
 
 MIDDLEWARE = [
@@ -145,3 +147,86 @@ EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD")
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL")
 
 AUTH_USER_MODEL = "accounts.user"
+
+
+# CKEDITOR_5_CONFIGS
+CKEDITOR_5_CONFIGS = {
+    "default": {
+        # ------------------------------------------------------------
+        # Toolbar — what buttons appear in the editor
+        # The '|' character is a visual separator between button groups.
+        # ------------------------------------------------------------
+        "toolbar": [
+            "heading",
+            "|",
+            "bold",
+            "italic",
+            "underline",
+            "strikethrough",
+            "|",
+            "link",
+            "bulletedList",
+            "numberedList",
+            "|",
+            "outdent",
+            "indent",
+            "|",
+            "blockQuote",
+            "insertTable",
+            "codeBlock",
+            "|",
+            "imageUpload",
+            "mediaEmbed",
+            "|",
+            "undo",
+            "redo",
+        ],
+        # Editor UI language (buttons, menus, tooltips)
+        "language": "en",
+        # Writing direction inside the editor (ltr for English)
+        "contentsLangDirection": "ltr",
+        # Image plugin settings — what tools appear when an image is selected
+        "image": {
+            "toolbar": [
+                "imageTextAlternative",  # alt text
+                "toggleImageCaption",  # caption on/off
+                "imageStyle:inline",  # image inline with text
+                "imageStyle:block",  # image on its own line
+                "imageStyle:side",  # image floated to the side
+            ],
+        },
+        # Table plugin settings — what tools appear when a table is focused
+        "table": {
+            "contentToolbar": [
+                "tableColumn",  # insert/delete columns
+                "tableRow",  # insert/delete rows
+                "mergeTableCells",  # merge/split cells
+            ],
+        },
+        # Editor dimensions
+        "height": "500px",
+        "width": "100%",
+        # Plugins to disable (Style adds a dropdown we don't need)
+        "removePlugins": ["Style"],
+    },
+    # Minimal config for short fields (e.g., summaries)
+    "minimal": {
+        "toolbar": [
+            "bold",
+            "italic",
+            "link",
+            "bulletedList",
+            "numberedList",
+        ],
+        "language": "en",
+        "contentsLangDirection": "ltr",
+        "height": "200px",
+    },
+}
+
+# Where uploaded files (images, etc.) from the editor are stored
+CKEDITOR_5_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+CKEDITOR_5_UPLOAD_PATH = "uploads/ckeditor/"
+
+# Max upload size in MB
+CKEDITOR_5_MAX_FILE_SIZE = 5
