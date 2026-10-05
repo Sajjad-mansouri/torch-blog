@@ -233,3 +233,23 @@ CKEDITOR_5_UPLOAD_PATH = "uploads/ckeditor/"
 
 # Max upload size in MB
 CKEDITOR_5_MAX_FILE_SIZE = 5
+
+
+# cache config
+# config/settings.py
+
+# Minimal cache backend for development
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "torch-cache",
+    }
+}
+
+# For production, use Redis:
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+#         'LOCATION': 'redis://127.0.0.1:6379/1',
+#     }
+# }

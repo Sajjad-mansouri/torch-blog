@@ -1,9 +1,11 @@
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
 from django_ckeditor_5.fields import CKEditor5Field
 
+from . import constants
 from .queryset import PostQuerySet
 from .utils import calculate_reading_time, clean_text
 
@@ -54,6 +56,11 @@ class Category(models.Model):
             self.slug = slug
 
         super().save(*args, **kwargs)
+        cache.delete(constants.HOME_PAGE_DATA_CACHE_KEY)
+
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+        cache.delete(constants.HOME_PAGE_DATA_CACHE_KEY)
 
 
 class Tag(models.Model):
@@ -78,6 +85,11 @@ class Tag(models.Model):
         if not self.slug:
             self.slug = slugify(self.name, allow_unicode=True)
         super().save(*args, **kwargs)
+        cache.delete(constants.HOME_PAGE_DATA_CACHE_KEY)
+
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+        cache.delete(constants.HOME_PAGE_DATA_CACHE_KEY)
 
 
 def post_image_upload_path(instance, filename):
@@ -235,6 +247,11 @@ class Post(models.Model):
             self.meta_description = source[:300]
 
         super().save(*args, **kwargs)
+        cache.delete(constants.HOME_PAGE_DATA_CACHE_KEY)
+
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
+        cache.delete(constants.HOME_PAGE_DATA_CACHE_KEY)
 
     def can_be_deleted_by(self, user):
         if not user or not user.is_authenticated:
