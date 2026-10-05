@@ -362,3 +362,32 @@ class Post(models.Model):
     @property
     def is_published(self):
         return self.status == self.Status.PUBLISHED and not self.is_deleted
+
+
+class PostView(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="views")
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="post_views",
+    )
+
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    session_key = models.CharField(max_length=70, blank=True)
+    user_agent = models.CharField(max_length=300, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = "Post View"
+        verbose_name_plural = "Post Views"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["post", "-created_at"]),
+            models.Index(fields=["user", "-created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.post.title} - {self.created_at}"
