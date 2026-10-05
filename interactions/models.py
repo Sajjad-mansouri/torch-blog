@@ -131,3 +131,25 @@ class CommentLike(models.Model):
 
     def __str__(self):
         return f"{self.user.username} liked comment {self.comment_id}"
+
+
+class Bookmark(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bookmarks")
+    post = models.ForeignKey(
+        "blog.Post", on_delete=models.CASCADE, related_name="bookmarks"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = "Bookmark"
+        verbose_name_plural = "Bookmarks"
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["user", "post"], name="unique_bookmark")
+        ]
+        indexes = [
+            models.Index(fields=["user", "-created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} bookmarked {self.post_id}"
