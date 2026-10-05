@@ -391,3 +391,46 @@ class PostView(models.Model):
 
     def __str__(self):
         return f"{self.post.title} - {self.created_at}"
+
+
+class PostRevision(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="revisions")
+    revision_number = models.PositiveIntegerField()
+    title = models.CharField(max_length=250)
+    summary = models.TextField(blank=True, default="")
+    body = models.TextField()
+    edited_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name="post_revisions"
+    )
+    change_note = models.CharField(max_length=300, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Post Revision"
+        verbose_name_plural = "Post Revisions"
+        ordering = ["-revision_number"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["post", "revision_number"], name="unique_revision_per_post"
+            )
+        ]
+        indexes = [
+            models.Index(fields=["post", "-revision_number"]),
+        ]
+
+    def __str__(self):
+        return f"{self.post.title} - v{self.revision_number}"
+
+    @classmethod
+    def create_for_post(cls, post, user, change_note=""):
+        last = cls.objects.filter(post=post).order_by("-revision_number").first()
+        next_num = (last.revision_number + 1) if last else 1
+        return cls.objects.create(
+            post=post,
+            revision_number=next_num,
+            title=post.title,
+            summary=post.summary,
+            body=post.body,
+            edited_by=user,
+            change_note=change_note,
+        )
