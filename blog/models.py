@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 from django_ckeditor_5.fields import CKEditor5Field
 
+from .queryset import PostQuerySet
 from .utils import calculate_reading_time, clean_text
 
 User = get_user_model()
@@ -82,29 +83,6 @@ class Tag(models.Model):
 def post_image_upload_path(instance, filename):
     today = timezone.now()
     return f"posts/{today.year}/{today.month:02d}/{filename}"
-
-
-class PostQuerySet(models.QuerySet):
-    def published(self):
-        return self.filter(
-            status=Post.Status.PUBLISHED,
-            is_deleted=False,
-            published_at__lte=timezone.now(),
-        )
-
-    def featured(self):
-        return (
-            self.published()
-            .filter(is_featured=True)
-            .order_by("feature_order", "-published_at")
-        )
-
-    def trending(self, days=7):
-        cutoff = timezone.now() - timezone.timedelta(days=days)
-        return self.published().filter(published__gte=cutoff).order_by("-views_count")
-
-    def latest(self):
-        return self.published().order_by("-published_at")
 
 
 def create_post_slug(title, post_pk):
