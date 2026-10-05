@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "blog",
     "interactions",
     "notifications",
+    "core",
     # third pary app
     "django_ckeditor_5",
 ]
