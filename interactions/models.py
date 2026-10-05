@@ -85,3 +85,49 @@ class Comment(models.Model):
     def mark_edited(self):
         self.edited_at = timezone.now()
         self.save(update_fields=["edited_at"])
+
+
+class Like(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="post_likes")
+    post = models.ForeignKey(
+        "blog.Post", on_delete=models.CASCADE, related_name="likes"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = "Like"
+        verbose_name_plural = "Likes"
+        constraints = [
+            models.UniqueConstraint(fields=["user", "post"], name="unique_post_like")
+        ]
+        indexes = [
+            models.Index(fields=["user", "post"]),
+            models.Index(fields=["post", "-created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} liked post {self.post_id}"
+
+
+class CommentLike(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="comment_likes"
+    )
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name="likes")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        verbose_name = "Comment Like"
+        verbose_name_plural = "Comment Likes"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "comment"], name="unique_comment_like"
+            )
+        ]
+        indexes = [
+            models.Index(fields=["user", "comment"]),
+            models.Index(fields=["comment", "-created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} liked comment {self.comment_id}"
