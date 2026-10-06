@@ -1,4 +1,5 @@
 # blog/urls.py
+from account.api import views as account_views
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
@@ -9,6 +10,7 @@ app_name = "blog_api"
 router = DefaultRouter()
 router.register("categories", views.CategoryViewSet, basename="category")
 router.register("tags", views.TagViewSet, basename="tag")
+router.register("authors", account_views.AuthorViewSet, basename="author")
 urlpatterns = [
     path("home/", views.HomeAPIView.as_view(), name="home"),
     path("posts/", views.PostListAPIView.as_view(), name="post_list"),

@@ -1,6 +1,11 @@
 # blog/serializers.py
 from rest_framework import serializers
 
+# Import author serializers from accounts
+from accounts.serializers import (
+    AuthorBriefSerializer,
+    AuthorDetailSerializer,
+)
 from interactions.models import Comment
 
 from .models import Category, Post, Tag
@@ -8,18 +13,6 @@ from .models import Category, Post, Tag
 # ============================================================
 # Brief serializers (nested inside post cards)
 # ============================================================
-
-
-class AuthorBriefSerializer(serializers.Serializer):
-    """
-    Minimal author info shown inside a post card.
-    Uses properties from the User model — no direct DB access.
-    """
-
-    id = serializers.IntegerField(read_only=True)
-    username = serializers.CharField(read_only=True)
-    display_name = serializers.CharField(read_only=True)
-    avatar_url = serializers.CharField(read_only=True)
 
 
 class CategoryBriefSerializer(serializers.Serializer):
@@ -134,17 +127,6 @@ class HomeSerializer(serializers.Serializer):
     trending = PostCardSerializer(many=True, read_only=True)
     categories = CategorySerializer(many=True, read_only=True)
     hot_tags = TagSerializer(many=True, read_only=True)
-
-
-class AuthorDetailSerializer(AuthorBriefSerializer):
-    """
-    Author info shown on the post detail page.
-    Slightly richer than the brief version — includes bio and social links.
-    """
-
-    bio = serializers.CharField(read_only=True)
-    website = serializers.CharField(read_only=True)
-    social_links = serializers.DictField(read_only=True)
 
 
 # ============================================================
