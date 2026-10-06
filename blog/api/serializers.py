@@ -76,6 +76,12 @@ class PostCardSerializer(serializers.ModelSerializer):
 # ============================================================
 
 
+class CategoryParentSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField(read_only=True)
+    slug = serializers.SlugField(read_only=True)
+
+
 class CategorySerializer(serializers.ModelSerializer):
     """
     Category with post count.
@@ -83,6 +89,7 @@ class CategorySerializer(serializers.ModelSerializer):
     """
 
     post_count = serializers.IntegerField(read_only=True)
+    parent = CategoryParentSerializer(read_only=True)
 
     class Meta:
         model = Category
@@ -92,6 +99,8 @@ class CategorySerializer(serializers.ModelSerializer):
             "slug",
             "description",
             "image",
+            "parent",
+            "order",
             "post_count",
         ]
 

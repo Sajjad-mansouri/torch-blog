@@ -1,6 +1,7 @@
 from django.core.cache import cache
 from django.db.models import Count, Prefetch, Q
-from rest_framework import generics
+from rest_framework import generics, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,6 +10,7 @@ from blog.models import Category, Post, Tag
 from interactions.models import Comment
 
 from .filters import PostFilter
+from .mixins import PostOrderingMixin
 from .pagination import PostPagination
 from .serializers import (
     CategorySerializer,
@@ -104,7 +106,7 @@ class HomeAPIView(APIView):
         return TagSerializer(qs, many=True).data
 
 
-class PostListAPIView(generics.ListAPIView):
+class PostListAPIView(PostOrderingMixin, generics.ListAPIView):
     """
     GET /api/v1/posts/
 
@@ -151,18 +153,8 @@ class PostListAPIView(generics.ListAPIView):
         if self.request.query_params.get("tag"):
             qs = qs.distinct()
 
-        ordering = self.request.query_params.get("ordering")
-        order_map = {
-            "newest": "-published_at",
-            "oldest": "published_at",
-            "most_viewed": "-views_count",
-            "most_liked": "-like_count",
-            "most_commented": "-comment_count",
-            "title_asc": "title",
-            "title_desc": "-title",
-        }
-        order_field = order_map.get(ordering, "-published_at")
-        return qs.order_by(order_field)
+        ordered_qs = self._apply_ordering(qs, self.request)
+        return ordered_qs
 
 
 class PostDetailAPIView(generics.RetrieveAPIView):
@@ -270,3 +262,97 @@ class PostDetailAPIView(generics.RetrieveAPIView):
             "bookmarked_post_ids": bookmarked_post_ids,
             "liked_comment_ids": liked_comment_ids,
         }
+
+
+# Category ViewSet
+class CategoryViewSet(PostOrderingMixin, viewsets.ReadOnlyModelViewSet):
+    """
+    list:   GET /api/v1/categories/
+    detail: GET /api/v1/categories/<slug>/
+    posts:  GET /api/v1/categories/<slug>/posts/
+    """
+
+    permission_classes = [AllowAny]
+    serializer_class = CategorySerializer
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        """
+        Only active categories, with a post count annotated.
+        Post count respects published + not deleted.
+        """
+
+        return (
+            Category.objects.filter(is_active=True)
+            .select_related("parent")
+            .annotate(
+                post_count=Count(
+                    "posts",
+                    filter=Q(posts__status="published", posts__is_deleted=False),
+                    distinct=True,
+                )
+            )
+            .order_by("order", "name")
+        )
+
+    # Nested: /categories/<slug>/posts/
+    @action(
+        detail=True, methods=["get"], url_path="posts", pagination_class=PostPagination
+    )
+    def posts(self, request, slug=None):
+        """
+        Posts that belong to this category.
+        Supports the same filters, ordering, and search as
+        /api/v1/posts/, plus an `include_subcategories` option.
+        """
+        category = self.get_object()
+
+        # optionally include posts from child categories
+        include_children = (
+            request.query_params.get("include_subcategories", "false").lower == "true"
+        )
+        if include_children:
+            # Collect this category + all descendants
+            child_ids = self._collect_descendant_ids(category)
+            category_ids = [category.id] + child_ids
+            posts_qs = Post.objects.filter(category_id__in=category_ids)
+        else:
+            posts_qs = Post.objects.filter(category=category)
+
+        posts_qs = posts_qs.published().for_card()
+
+        # Apply filters
+        filterset = PostFilter(data=request.query_params, queryset=posts_qs)
+
+        if filterset.is_valid():
+            posts_qs = filterset.qs
+
+        # Apply ordering using the same map as PostListAPIView
+        posts_qs = self._apply_ordering(posts_qs, request)
+
+        # Deduplicate (needed if tag filter is applied)
+        if request.query_params.get("tag"):
+            posts_qs = posts_qs.distinct()
+
+        # paginate
+        page = self.paginate_queryset(posts_qs)
+        if page is not None:
+            serializer = PostCardSerializer(
+                page, many=True, context={"request": request}
+            )
+            return self.get_paginated_response(serializer.data)
+
+        serializer = PostCardSerializer(
+            posts_qs, many=True, context={"request": request}
+        )
+        return Response(serializer.data)
+
+    # helper
+    def _collect_descendant_ids(self, category):
+        """Recursively collect all descendant category IDs."""
+        ids = []
+        children = Category.objects.filter(parent=category, is_active=True)
+        for child in children:
+            ids.append(child.id)
+            ids.extend(self._collect_descendant_ids(child))
+        return ids
