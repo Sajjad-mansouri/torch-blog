@@ -1,15 +1,26 @@
 from django.core.cache import cache
-from django.db.models import Count, Q
+from django.db.models import Count, Prefetch, Q
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from blog.models import Category, Post, Tag
+from interactions.models import Comment
 
 from .filters import PostFilter
 from .pagination import PostPagination
-from .serializers import CategorySerializer, PostCardSerializer, TagSerializer
+from .serializers import (
+    CategorySerializer,
+    PostCardSerializer,
+    PostDetailSerializer,
+    TagSerializer,
+)
+from .services import (
+    get_author_other_posts,
+    get_similar_posts,
+    record_view,
+)
 
 
 class HomeAPIView(APIView):
@@ -152,3 +163,110 @@ class PostListAPIView(generics.ListAPIView):
         }
         order_field = order_map.get(ordering, "-published_at")
         return qs.order_by(order_field)
+
+
+class PostDetailAPIView(generics.RetrieveAPIView):
+    """
+    Returns:
+    - The full post
+    - Nested comments (top-level with replies)
+    - Similar posts (based of shared tags)
+    - Other posts by the same author
+    - is_liked/ is_bookmarked for the current user
+
+    Records a deduplicated view
+    """
+
+    permission_classes = [AllowAny]
+    serializer_class = PostDetailSerializer
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        qs = Post.objects.for_card()
+        user = self.request.user
+        if not user.is_authenticated or not user.is_editor:
+            qs = qs.published()
+
+        return qs
+
+    def retrieve(self, request, *args, **kwargs):
+        """
+        override to:
+        1- Record the view (updates view_count)
+        2- build the nested context data
+        3- Serialize and return
+        """
+
+        post = self.get_object()
+
+        # Record view (deduplicated)
+        record_view(request, post)
+
+        # Build context data for the serializer
+        context = self.get_serializer_context()
+        context.update(self._build_nested_context(post, request))
+
+        serializer = self.get_serializer(post, context=context)
+        return Response(serializer.data)
+
+    def _build_nested_context(self, post, request):
+        """
+        Preload comments, similar posts, and user-specific flags
+        into the serializer context.
+        """
+
+        top_level_comments = (
+            post.comments.filter(
+                status="approved", is_deleted=False, parent__isnull=True
+            )
+            .select_related("author")
+            .prefetch_related(
+                Prefetch(
+                    "replies",
+                    queryset=Comment.objects.filter(status="approved", is_deleted=False)
+                    .select_related("author")
+                    .annotate(like_count=Count("likes", distinct=True))
+                    .order_by("created_at"),
+                )
+            )
+            .annotate(like_count=Count("likes", distinct=True))
+            .order_by("created_at")
+        )
+
+        # Similar posts and author's other posts
+        similar_posts = get_similar_posts(post, limit=4)
+        author_other_posts = get_author_other_posts(post, limit=3)
+
+        # user-specifif flags
+
+        liked_post_ids = set()
+        bookmarked_post_ids = set()
+        liked_comment_ids = set()
+
+        if request.user.is_authenticated:
+            liked_post_ids = set(
+                request.user.post_likes.filter(post_id=post.id).values_list(
+                    "post_id", flat=True
+                )
+            )
+
+            bookmarked_post_ids = set(
+                request.user.bookmarks.filter(post_id=post.id).values_list(
+                    "post_id", flat=True
+                )
+            )
+
+            liked_comment_ids = set(
+                request.user.comment_likes.filter(comment__post=post).values_list(
+                    "comment_id", flat=True
+                )
+            )
+
+        return {
+            "top_level_comments": top_level_comments,
+            "similar_posts": similar_posts,
+            "author_other_posts": author_other_posts,
+            "liked_post_ids": liked_post_ids,
+            "bookmarked_post_ids": bookmarked_post_ids,
+            "liked_comment_ids": liked_comment_ids,
+        }
