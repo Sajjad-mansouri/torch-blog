@@ -8,6 +8,7 @@ app_name = "blog_api"
 
 router = DefaultRouter()
 router.register("categories", views.CategoryViewSet, basename="category")
+router.register("tags", views.TagViewSet, basename="tag")
 urlpatterns = [
     path("home/", views.HomeAPIView.as_view(), name="home"),
     path("posts/", views.PostListAPIView.as_view(), name="post_list"),

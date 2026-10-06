@@ -356,3 +356,77 @@ class CategoryViewSet(PostOrderingMixin, viewsets.ReadOnlyModelViewSet):
             ids.append(child.id)
             ids.extend(self._collect_descendant_ids(child))
         return ids
+
+
+# blog/views.py
+
+
+class TagViewSet(PostOrderingMixin, viewsets.ReadOnlyModelViewSet):
+    """
+    list:   GET /api/v1/tags/
+    detail: GET /api/v1/tags/<slug>/
+    posts:  GET /api/v1/tags/<slug>/posts/
+    """
+
+    permission_classes = [AllowAny]
+    serializer_class = TagSerializer
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        """
+        Tags ordered by usage count (most used first).
+        Optionally filter by name with ?search=
+        """
+        qs = Tag.objects.all()
+
+        search = self.request.query_params.get("search")
+        if search:
+            qs = qs.filter(name__icontains=search)
+
+        return qs.order_by("-usage_count", "name")
+
+    # ------------------------------------------------------------
+    # Nested: /tags/<slug>/posts/
+    # ------------------------------------------------------------
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="posts",
+        pagination_class=PostPagination,
+    )
+    def posts(self, request, slug=None):
+        """
+        Posts that have this tag.
+        Supports the same filters and ordering as /api/v1/posts/.
+        """
+        tag = self.get_object()
+
+        posts_qs = Post.objects.published().filter(tags=tag).for_card()
+
+        # Apply filters (tag is already fixed by the route)
+        filterset = PostFilter(
+            data=request.query_params,
+            queryset=posts_qs,
+        )
+        if filterset.is_valid():
+            posts_qs = filterset.qs
+
+        # Apply ordering
+        posts_qs = self._apply_ordering(posts_qs, request)
+
+        # Deduplicate — needed because M2M joins can duplicate rows
+        posts_qs = posts_qs.distinct()
+
+        # Paginate
+        page = self.paginate_queryset(posts_qs)
+        if page is not None:
+            serializer = PostCardSerializer(
+                page, many=True, context={"request": request}
+            )
+            return self.get_paginated_response(serializer.data)
+
+        serializer = PostCardSerializer(
+            posts_qs, many=True, context={"request": request}
+        )
+        return Response(serializer.data)
