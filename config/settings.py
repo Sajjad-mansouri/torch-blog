@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "core",
     # third pary app
     "django_ckeditor_5",
+    "django_filters",
 ]
 
 MIDDLEWARE = [
@@ -253,3 +254,17 @@ CACHES = {
 #         'LOCATION': 'redis://127.0.0.1:6379/1',
 #     }
 # }
+
+
+REST_FRAMEWORK = {
+    "DEFAULT_THROTTLE_CLASS": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {"anon": "60/minute", "user": "300/minute"},
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filter.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.OrderingFilter",
+        "rest_framework.filters.SearchFilter",
+    ],
+}

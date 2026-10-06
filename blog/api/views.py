@@ -1,11 +1,14 @@
 from django.core.cache import cache
 from django.db.models import Count, Q
+from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from blog.models import Category, Post, Tag
 
+from .filters import PostFilter
+from .pagination import PostPagination
 from .serializers import CategorySerializer, PostCardSerializer, TagSerializer
 
 
@@ -88,3 +91,64 @@ class HomeAPIView(APIView):
             : self.HOT_TAG_LIMIT
         ]
         return TagSerializer(qs, many=True).data
+
+
+class PostListAPIView(generics.ListAPIView):
+    """
+    GET /api/v1/posts/
+
+    Query params:
+    - page: page number (default 1)
+    - page_size: items per page (default 12, max 50)
+    - category: filter by category slug
+    - tag: filter by tag slug
+    - author: filter by author username
+    - published_after: YYYY-MM-DD
+    - published_before: YYYY-MM-DD
+    - is_featured: true / false
+    - min_views: integer
+    - min_likes: integer
+    - ordering: field to sort by
+      (newest, oldest, most_viewed, most_liked, most_commented)
+    - search: search in title, summary, body
+
+    Returns:
+    {
+        "count": 120,
+        "num_pages": 10,
+        "current_page": 1,
+        "page_size": 12,
+        "next": "...",
+        "previous": null,
+        "results": [ ...PostCard... ]
+    }
+    """
+
+    permission_classes = [AllowAny]
+    serializer_class = PostCardSerializer
+    pagination_class = PostPagination
+    filterset_class = PostFilter
+    filter_backends = [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        # OrderingFilter removed
+    ]
+    search_fields = ["title", "summary"]
+
+    def get_queryset(self):
+        qs = Post.objects.published().for_card()
+        if self.request.query_params.get("tag"):
+            qs = qs.distinct()
+
+        ordering = self.request.query_params.get("ordering")
+        order_map = {
+            "newest": "-published_at",
+            "oldest": "published_at",
+            "most_viewed": "-views_count",
+            "most_liked": "-like_count",
+            "most_commented": "-comment_count",
+            "title_asc": "title",
+            "title_desc": "-title",
+        }
+        order_field = order_map.get(ordering, "-published_at")
+        return qs.order_by(order_field)
