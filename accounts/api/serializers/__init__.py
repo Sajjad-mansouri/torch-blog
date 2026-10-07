@@ -9,6 +9,7 @@ from .auth import (
     ChangePasswordSerializer,
     LoginSerializer,
     LogoutSerializer,
+    PasswordResetRequestSerializer,
     UserProfileSerializer,
 )
 
@@ -22,4 +23,5 @@ __all__ = [
     "LogoutSerializer",
     "AvatarUploadSerializer",
     "ChangePasswordSerializer",
+    "PasswordResetRequestSerializer",
 ]

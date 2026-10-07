@@ -304,3 +304,8 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "account.authentication.EmailAuthBackend",
 ]
+
+
+FRONTEND_URL = config("FRONTEND_URL")
+CELERY_BROKER_URL = config("CELERY_BROKER_URL")
+HOST_ASYNC_ABILITY = config("HOST_ASYNC_ABILITY", cast=bool)

@@ -1,9 +1,17 @@
+from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.forms import _unicode_ci_compare
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from rest_framework import serializers
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
+
+from accounts.tasks import send_email
 
 User = get_user_model()
 
@@ -199,3 +207,60 @@ class LogoutSerializer(serializers.Serializer):
             RefreshToken(self.validated_data["refresh"]).blacklist()
         except TokenError:
             pass
+
+
+# ============================================================
+# Password reset — request
+# ============================================================
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    """
+    Request a password reset. Always returns 200, even if the
+    email doesn't exist, to prevent user enumeration.
+    """
+
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        return value.strip().lower()
+
+    def save(self, **kwargs):
+        request = self.context.get("request")
+        current_site = get_current_site(request)
+        email = self.validated_data["email"]
+        protocol = "https" if request and request.is_secure() else "http"
+        for user in self.get_users(email):
+            context = {
+                "email": user.email,
+                "protocol": protocol,
+                "domain": current_site.domain,
+                "site_name": current_site.name,
+                "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+                "token": default_token_generator.make_token(user),
+            }
+            text_template = "accounts/password_reset/password_reset_confirm_email.txt"
+            html_template = "accounts/password_reset/password_reset_confirm_email.html"
+            email_kwargs = {
+                "recipient": user.email,
+                "subject": f"Password reset on {current_site.name}",
+                "text_template": text_template,
+                "html_template": html_template,
+                "context": context,
+            }
+
+            if settings.HOST_ASYNC_ABILITY:
+                send_email.delay(**email_kwargs)
+            else:
+                send_email(**email_kwargs)
+
+    def get_users(self, email):
+        active_users = User.objects.filter(
+            email__iexact=self.validated_data["email"],
+            is_active=True,
+        )
+        return (
+            u
+            for u in active_users
+            if u.has_usable_password() and _unicode_ci_compare(email, u.email)
+        )

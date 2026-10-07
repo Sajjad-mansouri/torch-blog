@@ -7,6 +7,7 @@ from .views_auth import (
     LoginView,
     LogoutView,
     MeView,
+    PasswordResetRequestView,
 )
 
 app_name = "auth"
@@ -24,5 +25,10 @@ urlpatterns = [
         "me/change-password/",
         ChangePasswordView.as_view(),
         name="change-password",
+    ),
+    path(
+        "password-reset/",
+        PasswordResetRequestView.as_view(),
+        name="password-reset",
     ),
 ]

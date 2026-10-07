@@ -8,6 +8,7 @@ from .serializers import (
     ChangePasswordSerializer,
     LoginSerializer,
     LogoutSerializer,
+    PasswordResetRequestSerializer,
     UserProfileSerializer,
 )
 
@@ -111,3 +112,28 @@ class ChangePasswordView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"detail": "Password changed."})
+
+
+class PasswordResetRequestView(generics.GenericAPIView):
+    """
+    POST /api/v1/auth/password-reset/
+    Request a password reset link.
+
+    Always returns 200 with the same message, even if the email
+    doesn't exist. This prevents user enumeration.
+    """
+
+    permission_classes = [AllowAny]
+    serializer_class = PasswordResetRequestSerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {
+                "detail": (
+                    "If an account with that email exists, a reset link has been sent."
+                )
+            }
+        )
