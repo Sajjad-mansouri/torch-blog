@@ -1,7 +1,7 @@
 # blog/filters.py
 import django_filters as filters
 
-from .models import Post
+from blog.models import Post
 
 
 class PostFilter(filters.FilterSet):

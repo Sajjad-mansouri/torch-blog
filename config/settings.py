@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "interactions",
     "notifications",
     "core",
+    "editor",
     # third pary app
     "django_ckeditor_5",
     "django_filters",
@@ -263,7 +264,7 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_THROTTLE_RATES": {"anon": "60/minute", "user": "300/minute"},
     "DEFAULT_FILTER_BACKENDS": [
-        "django_filter.rest_framework.DjangoFilterBackend",
+        "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.OrderingFilter",
         "rest_framework.filters.SearchFilter",
     ],

@@ -2,8 +2,7 @@
 from rest_framework import serializers
 
 from blog.utils import clean_text
-
-from .models import Comment
+from interactions.models import Comment
 
 # ============================================================
 # Comment author (minimal, nested)

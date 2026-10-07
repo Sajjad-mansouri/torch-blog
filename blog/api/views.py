@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.serializers import AuthorBriefSerializer
+from accounts.api.serializers import AuthorBriefSerializer
 from blog.models import Category, Post, Tag
 from interactions.models import Comment
 
@@ -27,14 +27,16 @@ from .serializers import (
     SearchSuggestItemSerializer,
     TagSerializer,
 )
-from .services import (
-    get_author_other_posts,
-    get_similar_posts,
+from .service_search import (
     normalize_query,
-    record_view,
     search_authors,
     search_posts,
     search_tags,
+)
+from .services import (
+    get_author_other_posts,
+    get_similar_posts,
+    record_view,
 )
 
 

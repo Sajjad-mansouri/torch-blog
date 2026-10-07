@@ -5,12 +5,12 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from accounts.models import User
 from blog.api.filters import PostFilter
 from blog.api.pagination import PostPagination
 from blog.api.serializers import PostCardSerializer
 from blog.models import Post
 
-from .models import User
 from .serializers import AuthorBriefSerializer, AuthorProfileSerializer
 from .services import get_author_stats
 

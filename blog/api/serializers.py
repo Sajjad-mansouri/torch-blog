@@ -2,14 +2,13 @@
 from rest_framework import serializers
 
 # Import author serializers from accounts
-from accounts.serializers import (
+from accounts.api.serializers import (
     AuthorBriefSerializer,
     AuthorDetailSerializer,
 )
+from blog.models import Category, Post, Tag
 from blog.utils import clean_text, sanitize_html
 from interactions.models import Comment
-
-from .models import Category, Post, Tag
 
 # ============================================================
 # Brief serializers (nested inside post cards)

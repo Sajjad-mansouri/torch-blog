@@ -13,8 +13,8 @@ from rest_framework.views import APIView
 from blog.api.pagination import PostPagination
 from blog.api.serializers import PostCardSerializer
 from blog.models import Post
+from interactions.models import Bookmark, Comment, CommentLike, Like
 
-from .models import Bookmark, Comment, CommentLike, Like
 from .serializers import (
     CommentSerializer,
     CommentWriteSerializer,
