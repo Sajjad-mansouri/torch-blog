@@ -1,3 +1,4 @@
+from .activity import EditorActivityLogView
 from .comments import CommentModerationViewSet, EditorCommentListView
 from .posts import (
     EditorPostListView,
@@ -21,4 +22,5 @@ __all__ = [
     "EditorCategoryViewSet",
     "EditorTagViewSet",
     "EditorSiteSettingsView",
+    "EditorActivityLogView",
 ]
