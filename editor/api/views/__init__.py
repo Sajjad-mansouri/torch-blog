@@ -1,3 +1,13 @@
-from .posts import EditorPostListView, PostDecisionViewSet, ReviewQueueView
+from .posts import (
+    EditorPostListView,
+    FeaturedPostsViewSet,
+    PostDecisionViewSet,
+    ReviewQueueView,
+)
 
-__all__ = ["ReviewQueueView", "EditorPostListView", "PostDecisionViewSet"]
+__all__ = [
+    "ReviewQueueView",
+    "EditorPostListView",
+    "PostDecisionViewSet",
+    "FeaturedPostsViewSet",
+]

@@ -7,6 +7,7 @@ from . import views
 app_name = "editor"
 router = DefaultRouter()
 router.register("posts", views.PostDecisionViewSet, basename="editor-post-decisions")
+router.register("featured", views.FeaturedPostsViewSet, basename="editor-featured")
 urlpatterns = [
     # Posts
     path("review-queue/", views.ReviewQueueView.as_view(), name="review-queue"),

@@ -11,6 +11,7 @@ from blog.api.permissions import IsEditor
 from blog.api.serializers import PostCardSerializer, PostDetailSerializer
 from blog.models import Post
 from editor.api.serializers import (
+    FeaturedReorderSerializer,
     RejectPostSerializer,
     RequestChangesSerializer,
     UnpublishPostSerializer,
@@ -246,3 +247,94 @@ class PostDecisionViewSet(viewsets.GenericViewSet):
         except ValueError as e:
             raise ValidationError({"detail": str(e)}) from None
         return self._respond(post)
+
+
+# ============================================================
+# Featured posts
+# ============================================================
+
+
+class FeaturedPostsViewSet(viewsets.GenericViewSet):
+    """
+    list:    GET   /api/v1/editor/featured/
+    reorder: PATCH /api/v1/editor/featured/reorder/
+    """
+
+    permission_classes = [IsEditor]
+    serializer_class = PostCardSerializer
+
+    def get_queryset(self):
+        return (
+            Post.objects.filter(is_featured=True, is_deleted=False)
+            .select_related("author", "category")
+            .prefetch_related("tags")
+            .annotate(
+                like_count=Count("likes", distinct=True),
+                comment_count=Count(
+                    "comments",
+                    filter=Q(
+                        comments__status="approved",
+                        comments__is_deleted=False,
+                    ),
+                    distinct=True,
+                ),
+                bookmark_count=Count("bookmarks", distinct=True),
+            )
+            .order_by("featured_order", "-published_at")
+        )
+
+    def list(self, request):
+        qs = self.get_queryset()
+        serializer = self.get_serializer(qs, many=True, context={"request": request})
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["patch"], url_path="reorder")
+    def reorder(self, request):
+        """
+        Reorder featured posts.
+
+        Payload:
+        {
+            "items": [
+                {"id": 42, "order": 0},
+                {"id": 43, "order": 1}
+            ]
+        }
+
+        Only IDs that belong to the featured set are reordered.
+        IDs not in the payload keep their current order.
+        """
+        payload = FeaturedReorderSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+
+        items = payload.validated_data["items"]
+        ids = [item["id"] for item in items]
+
+        # Verify all IDs exist and are featured
+        existing = set(
+            Post.objects.filter(
+                pk__in=ids, is_featured=True, is_deleted=False
+            ).values_list("pk", flat=True)
+        )
+        missing = set(ids) - existing
+        if missing:
+            raise ValidationError(
+                {
+                    "items": (
+                        f"Posts not found or not featured: "
+                        f"{', '.join(str(i) for i in missing)}"
+                    )
+                }
+            )
+
+        # Apply new orders in a single transaction
+        from django.db import transaction
+
+        with transaction.atomic():
+            for item in items:
+                Post.objects.filter(pk=item["id"]).update(featured_order=item["order"])
+
+        # Return the new ordering
+        qs = self.get_queryset()
+        serializer = self.get_serializer(qs, many=True, context={"request": request})
+        return Response(serializer.data)
