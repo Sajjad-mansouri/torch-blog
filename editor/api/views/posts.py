@@ -1,14 +1,26 @@
 # editor/views_posts.py
 from django.db.models import Count, Q
-from rest_framework import generics
+from django.shortcuts import get_object_or_404
+from rest_framework import generics, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
 
 from blog.api.pagination import PostPagination
 from blog.api.permissions import IsEditor
-from blog.api.serializers import (
-    PostCardSerializer,
-)
+from blog.api.serializers import PostCardSerializer, PostDetailSerializer
 from blog.models import Post
+from editor.api.serializers import (
+    RejectPostSerializer,
+    RequestChangesSerializer,
+    UnpublishPostSerializer,
+)
+from editor.api.services import (
+    approve_post,
+    reject_post,
+    request_changes,
+    unpublish_post,
+)
 
 # ============================================================
 # Review queue
@@ -143,3 +155,94 @@ class EditorPostListView(generics.ListAPIView):
         qs = qs.order_by(ordering)
 
         return qs
+
+
+# ============================================================
+# Post decisions
+# ============================================================
+
+
+class PostDecisionViewSet(viewsets.GenericViewSet):
+    """
+    approve:          POST /api/v1/editor/posts/<slug>/approve/
+    reject:           POST /api/v1/editor/posts/<slug>/reject/
+    request_changes:  POST /api/v1/editor/posts/<slug>/request-changes/
+    unpublish:        POST /api/v1/editor/posts/<slug>/unpublish/
+    """
+
+    permission_classes = [IsEditor]
+    lookup_field = "slug"
+    queryset = Post.objects.select_related("author", "category")
+
+    def get_object(self):
+        return get_object_or_404(self.get_queryset(), slug=self.kwargs["slug"])
+
+    def _respond(self, post):
+        return Response(
+            PostDetailSerializer(post, context={"request": self.request}).data
+        )
+
+    # ------------------------------------------------------------
+    # Approve and publish
+    # ------------------------------------------------------------
+
+    @action(detail=True, methods=["post"], url_path="approve")
+    def approve(self, request, slug=None):
+        post = self.get_object()
+        try:
+            approve_post(post, request.user)
+        except ValueError as e:
+            raise ValidationError({"detail": str(e)}) from None
+        return self._respond(post)
+
+    # ------------------------------------------------------------
+    # Reject
+    # ------------------------------------------------------------
+
+    @action(detail=True, methods=["post"], url_path="reject")
+    def reject(self, request, slug=None):
+        post = self.get_object()
+        payload = RejectPostSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+
+        try:
+            reject_post(post, request.user, payload.validated_data["reason"])
+        except ValueError as e:
+            raise ValidationError({"detail": str(e)}) from None
+        return self._respond(post)
+
+    # ------------------------------------------------------------
+    # Request changes
+    # ------------------------------------------------------------
+
+    @action(detail=True, methods=["post"], url_path="request-changes")
+    def request_changes_action(self, request, slug=None):
+        post = self.get_object()
+        payload = RequestChangesSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+
+        try:
+            request_changes(post, request.user, payload.validated_data["note"])
+        except ValueError as e:
+            raise ValidationError({"detail": str(e)}) from None
+        return self._respond(post)
+
+    # ------------------------------------------------------------
+    # Unpublish
+    # ------------------------------------------------------------
+
+    @action(detail=True, methods=["post"], url_path="unpublish")
+    def unpublish(self, request, slug=None):
+        post = self.get_object()
+        payload = UnpublishPostSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+
+        try:
+            unpublish_post(
+                post,
+                request.user,
+                payload.validated_data.get("reason", ""),
+            )
+        except ValueError as e:
+            raise ValidationError({"detail": str(e)}) from None
+        return self._respond(post)
