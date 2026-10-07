@@ -5,6 +5,7 @@ from rest_framework.response import Response
 
 from .serializers import (
     AvatarUploadSerializer,
+    ChangePasswordSerializer,
     LoginSerializer,
     LogoutSerializer,
     UserProfileSerializer,
@@ -94,3 +95,19 @@ class AvatarUploadView(generics.GenericAPIView):
                 context={"request": request},
             ).data
         )
+
+
+class ChangePasswordView(generics.GenericAPIView):
+    """
+    POST /api/v1/auth/me/change-password/
+    Change the authenticated user's password.
+    """
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = ChangePasswordSerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"detail": "Password changed."})

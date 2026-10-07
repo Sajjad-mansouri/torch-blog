@@ -6,6 +6,7 @@ from .account import (
 )
 from .auth import (
     AvatarUploadSerializer,
+    ChangePasswordSerializer,
     LoginSerializer,
     LogoutSerializer,
     UserProfileSerializer,
@@ -20,4 +21,5 @@ __all__ = [
     "LoginSerializer",
     "LogoutSerializer",
     "AvatarUploadSerializer",
+    "ChangePasswordSerializer",
 ]

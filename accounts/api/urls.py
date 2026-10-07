@@ -1,7 +1,13 @@
 # accounts/auth_urls.py
 from django.urls import path
 
-from .views_auth import AvatarUploadView, LoginView, LogoutView, MeView
+from .views_auth import (
+    AvatarUploadView,
+    ChangePasswordView,
+    LoginView,
+    LogoutView,
+    MeView,
+)
 
 app_name = "auth"
 
@@ -13,5 +19,10 @@ urlpatterns = [
         "me/avatar/",
         AvatarUploadView.as_view(),
         name="avatar-upload",
+    ),
+    path(
+        "me/change-password/",
+        ChangePasswordView.as_view(),
+        name="change-password",
     ),
 ]
