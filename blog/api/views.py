@@ -1,10 +1,10 @@
 from django.core.cache import cache
-from django.db.models import Count, Prefetch, Q
+from django.db.models import Count, Prefetch, Q, Sum
 from django.urls import reverse
-from rest_framework import generics, viewsets
+from rest_framework import generics, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -15,10 +15,15 @@ from interactions.models import Comment
 from .filters import PostFilter
 from .mixins import PostOrderingMixin
 from .pagination import PostPagination
+from .permissions import (
+    CanSubmitPost,
+    IsAuthorOrEditorOrReadOnly,
+)
 from .serializers import (
     CategorySerializer,
     PostCardSerializer,
     PostDetailSerializer,
+    PostWriteSerializer,
     SearchSuggestItemSerializer,
     TagSerializer,
 )
@@ -623,5 +628,343 @@ class SearchSuggestView(APIView):
             {
                 "query": query,
                 "results": SearchSuggestItemSerializer(suggestions, many=True).data,
+            }
+        )
+
+
+# ============================================================
+# Post ViewSet — create, update, delete, transitions
+# ============================================================
+
+
+class PostAuthorViewSet(
+    viewsets.GenericViewSet,
+    mixins.CreateModelMixin,
+    mixins.UpdateModelMixin,
+    mixins.DestroyModelMixin,
+):
+    """
+    create:  POST   /api/v1/posts/
+    update:  PATCH  /api/v1/posts/<slug>/
+    destroy: DELETE /api/v1/posts/<slug>/
+    submit:  POST   /api/v1/posts/<slug>/submit/
+    """
+
+    permission_classes = [IsAuthorOrEditorOrReadOnly]
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        """
+        Authors see their own posts in any status.
+        Editors see every post.
+        """
+        qs = Post.objects.select_related("author", "category").prefetch_related(
+            "tags", "extra_categories"
+        )
+
+        user = self.request.user
+        if not user.is_authenticated:
+            return qs.none()
+
+        if user.is_editor:
+            return qs
+        return qs.filter(author=user)
+
+    def get_serializer_class(self):
+        if self.action in ("create", "update", "partial_update"):
+            return PostWriteSerializer
+        return PostDetailSerializer
+
+    def perform_create(self, serializer):
+        """
+        New posts always belong to the current user and start as drafts.
+        """
+        serializer.save(
+            author=self.request.user,
+            status=Post.Status.DRAFT,
+        )
+
+    def create(self, request, *args, **kwargs):
+        """
+        Create a draft. Returns the full post detail.
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        # Return the full post so the client gets all fields
+        post = serializer.instance
+        read_serializer = PostDetailSerializer(post, context={"request": request})
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            read_serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers,
+        )
+
+    def update(self, request, *args, **kwargs):
+        """
+        Update a post. Only allowed for drafts, rejected,
+        or changes_requested posts (enforced by model.save()).
+        """
+        instance = self.get_object()
+
+        # Check object-level permission
+        self.check_object_permissions(request, instance)
+
+        # Enforce editability
+        if not instance.can_be_edited_by(request.user):
+            raise ValidationError(
+                {
+                    "detail": (
+                        f'Post in status "{instance.status}" cannot be edited by you.'
+                    )
+                }
+            )
+
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        # Return the full post detail
+        read_serializer = PostDetailSerializer(instance, context={"request": request})
+        return Response(read_serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Soft delete. Only allowed for drafts, rejected, or archived.
+        """
+        instance = self.get_object()
+        self.check_object_permissions(request, instance)
+
+        if not instance.can_be_deleted_by(request.user):
+            raise ValidationError(
+                {"detail": (f'Post in status "{instance.status}" cannot be deleted.')}
+            )
+
+        instance.soft_delete(request.user)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    # ------------------------------------------------------------
+    # Status transition — submit for review
+    # ------------------------------------------------------------
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="submit",
+        permission_classes=[IsAuthenticated, CanSubmitPost],
+    )
+    def submit(self, request, slug=None):
+        """
+        Move a post from draft/rejected/changes_requested to pending.
+        """
+        post = self.get_object()
+        self.check_object_permissions(request, post)
+        post.submit_for_review()
+
+        serializer = PostDetailSerializer(post, context={"request": request})
+        return Response(serializer.data)
+
+
+# ============================================================
+# Me — own posts, drafts, analytics
+# ============================================================
+
+
+class MePostViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+    """
+    list:      GET /api/v1/me/posts/
+    drafts:    GET /api/v1/me/drafts/
+    analytics: GET /api/v1/me/analytics/
+    """
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = PostCardSerializer
+    pagination_class = PostPagination
+
+    def get_queryset(self):
+        """
+        Base queryset: posts owned by the current user (or all posts
+        if the user is an editor).
+        """
+        qs = Post.objects.select_related("author", "category").prefetch_related("tags")
+
+        user = self.request.user
+
+        if self.action == "list" and user.is_editor:
+            # Editors can optionally see all posts via ?all=true
+            if self.request.query_params.get("all") == "true":
+                return qs
+            return qs.filter(author=user)
+
+        return qs.filter(author=user)
+
+    def get_queryset_with_counts(self, base):
+        """
+        Annotate card counts on the queryset for the list action.
+        """
+        return base.annotate(
+            like_count=Count("likes", distinct=True),
+            comment_count=Count(
+                "comments",
+                filter=Q(
+                    comments__status="approved",
+                    comments__is_deleted=False,
+                ),
+                distinct=True,
+            ),
+            bookmark_count=Count("bookmarks", distinct=True),
+        )
+
+    def get_serializer_class(self):
+        if self.action == "analytics":
+            return None  # handled manually in the action
+        return PostCardSerializer
+
+    # ------------------------------------------------------------
+    # /me/posts/
+    # ------------------------------------------------------------
+
+    def list(self, request, *args, **kwargs):
+        """
+        List the current user's posts, filterable by status.
+
+        Query params:
+        - status: draft | pending | published | rejected | ...
+        - search
+        - ordering
+        """
+        qs = self.get_queryset()
+
+        # Status filter
+        status_filter = request.query_params.get("status")
+        if status_filter:
+            valid = dict(Post.Status.choices)
+            if status_filter not in valid:
+                raise ValidationError(
+                    {
+                        "status": f"Invalid status. Choose from: {', '.join(valid.keys())}"
+                    }
+                )
+            qs = qs.filter(status=status_filter)
+
+        # Search
+        search = request.query_params.get("search")
+        if search:
+            qs = qs.filter(Q(title__icontains=search) | Q(summary__icontains=search))
+
+        # Ordering
+        ordering = request.query_params.get("ordering", "-updated_at")
+        allowed = [
+            "updated_at",
+            "-updated_at",
+            "created_at",
+            "-created_at",
+            "published_at",
+            "-published_at",
+            "views_count",
+            "-views_count",
+        ]
+        if ordering not in allowed:
+            raise ValidationError(
+                {"ordering": f"Invalid. Choose from: {', '.join(allowed)}"}
+            )
+        qs = qs.order_by(ordering)
+
+        # Annotate counts for the cards
+        qs = self.get_queryset_with_counts(qs)
+
+        # Paginate
+        page = self.paginate_queryset(qs)
+        serializer = self.get_serializer(
+            page if page is not None else qs,
+            many=True,
+            context={"request": request},
+        )
+        if page is not None:
+            return self.get_paginated_response(serializer.data)
+        return Response(serializer.data)
+
+    # ------------------------------------------------------------
+    # /me/drafts/
+    # ------------------------------------------------------------
+
+    @action(detail=False, methods=["get"], url_path="drafts")
+    def drafts(self, request):
+        """
+        Shortcut for listing own drafts.
+        """
+        qs = self.get_queryset().filter(status=Post.Status.DRAFT)
+        qs = self.get_queryset_with_counts(qs).order_by("-updated_at")
+
+        page = self.paginate_queryset(qs)
+        serializer = PostCardSerializer(
+            page if page is not None else qs,
+            many=True,
+            context={"request": request},
+        )
+        if page is not None:
+            return self.get_paginated_response(serializer.data)
+        return Response(serializer.data)
+
+    # ------------------------------------------------------------
+    # /me/analytics/
+    # ------------------------------------------------------------
+
+    @action(detail=False, methods=["get"], url_path="analytics")
+    def analytics(self, request):
+        """
+        Aggregate stats for the current user's posts.
+        """
+        user = request.user
+        base = Post.objects.published().filter(author=user)
+
+        stats = base.aggregate(
+            total_posts=Count("id", distinct=True),
+            total_views=Sum("views_count"),
+            total_likes=Count("likes", distinct=True),
+            total_comments=Count(
+                "comments",
+                filter=Q(
+                    comments__status="approved",
+                    comments__is_deleted=False,
+                ),
+                distinct=True,
+            ),
+            total_bookmarks=Count("bookmarks", distinct=True),
+        )
+
+        # Counts by status
+        status_counts = dict(
+            Post.objects.filter(author=user, is_deleted=False)
+            .values_list("status")
+            .annotate(count=Count("id"))
+        )
+
+        # Top 5 posts by views
+        top_posts = base.order_by("-views_count").for_card()[:5]
+
+        return Response(
+            {
+                "totals": {
+                    "posts": stats["total_posts"] or 0,
+                    "views": stats["total_views"] or 0,
+                    "likes": stats["total_likes"] or 0,
+                    "comments": stats["total_comments"] or 0,
+                    "bookmarks": stats["total_bookmarks"] or 0,
+                },
+                "by_status": {
+                    "draft": status_counts.get("draft", 0),
+                    "pending": status_counts.get("pending", 0),
+                    "changes_requested": status_counts.get("changes_requested", 0),
+                    "published": status_counts.get("published", 0),
+                    "rejected": status_counts.get("rejected", 0),
+                    "unpublished": status_counts.get("unpublished", 0),
+                    "archived": status_counts.get("archived", 0),
+                },
+                "top_posts": PostCardSerializer(
+                    top_posts, many=True, context={"request": request}
+                ).data,
             }
         )

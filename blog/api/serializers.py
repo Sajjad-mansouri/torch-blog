@@ -6,6 +6,7 @@ from accounts.serializers import (
     AuthorBriefSerializer,
     AuthorDetailSerializer,
 )
+from blog.utils import clean_text, sanitize_html
 from interactions.models import Comment
 
 from .models import Category, Post, Tag
@@ -337,3 +338,96 @@ class SearchSuggestItemSerializer(serializers.Serializer):
     label = serializers.CharField()
     slug = serializers.CharField()
     url = serializers.CharField()
+
+
+# ============================================================
+# Post write serializer
+# ============================================================
+
+
+class PostWriteSerializer(serializers.ModelSerializer):
+    """
+    Serializer for creating and updating posts.
+
+    - Accepts only writable fields (no status, no counts, no SEO auto).
+    - Sanitizes `body` and cleans `summary`.
+    - Auto-generates `slug` if not provided.
+    - Rejects duplicate titles per author (optional — see below).
+    """
+
+    class Meta:
+        model = Post
+        fields = [
+            "title",
+            "slug",
+            "summary",
+            "body",
+            "featured_image",
+            "category",
+            "extra_categories",
+            "tags",
+            "meta_title",
+            "meta_description",
+            "og_image",
+            "no_index",
+        ]
+        extra_kwargs = {
+            "slug": {"required": False, "allow_blank": True},
+            "summary": {"required": False, "allow_blank": True},
+            "category": {"required": False, "allow_null": True},
+            "meta_title": {"required": False, "allow_blank": True},
+            "meta_description": {"required": False, "allow_blank": True},
+        }
+
+    # ------------------------------------------------------------
+    # Field-level validation and cleaning
+    # ------------------------------------------------------------
+
+    def validate_title(self, value):
+        value = value.strip()
+        if len(value) < 3:
+            raise serializers.ValidationError("Title must be at least 3 characters.")
+        return value
+
+    def validate_summary(self, value):
+        if not value:
+            return value
+        # Strip any HTML the client might have sent
+        return clean_text(value)[:500]
+
+    def validate_body(self, value):
+        if not value or not value.strip():
+            raise serializers.ValidationError("Body cannot be empty.")
+        # Sanitize HTML — remove scripts, event handlers, etc.
+        cleaned = sanitize_html(value)
+        if not cleaned.strip():
+            raise serializers.ValidationError(
+                "Body cannot be empty after sanitization."
+            )
+        return cleaned
+
+    def validate_meta_title(self, value):
+        return value.strip() if value else value
+
+    def validate_meta_description(self, value):
+        return value.strip() if value else value
+
+    # ------------------------------------------------------------
+    # Object-level validation
+    # ------------------------------------------------------------
+
+    def validate(self, attrs):
+        # Prevent category = extra_categories duplication
+        category = attrs.get("category")
+        extra_categories = attrs.get("extra_categories")
+        if category and extra_categories:
+            if category in extra_categories:
+                raise serializers.ValidationError(
+                    {
+                        "extra_categories": (
+                            "The primary category cannot also appear "
+                            "in extra_categories."
+                        )
+                    }
+                )
+        return attrs
