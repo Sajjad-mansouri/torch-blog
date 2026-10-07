@@ -11,10 +11,22 @@ router.register("featured", views.FeaturedPostsViewSet, basename="editor-feature
 router.register(
     "comments", views.CommentModerationViewSet, basename="editor-comment-actions"
 )
+router.register("users", views.EditorUserDetailViewSet, basename="editor-user-actions")
+router.register("categories", views.EditorCategoryViewSet, basename="editor-category")
+router.register("tags", views.EditorTagViewSet, basename="editor-tag")
+
 urlpatterns = [
     # Posts
     path("review-queue/", views.ReviewQueueView.as_view(), name="review-queue"),
     path("posts-list/", views.EditorPostListView.as_view(), name="editor-post-list"),
+    # Comments
+    path(
+        "comments-list/",
+        views.EditorCommentListView.as_view(),
+        name="editor-comment-list",
+    ),
+    # Users
+    path("users-list/", views.EditorUserListView.as_view(), name="editor-user-list"),
     # Router (actions on resources)
     path("", include(router.urls)),
 ]

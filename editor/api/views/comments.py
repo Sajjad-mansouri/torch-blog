@@ -5,10 +5,10 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
-from blog.pagination import PostPagination
-from blog.permissions import IsEditor
+from blog.api.pagination import PostPagination
+from blog.api.permissions import IsEditor
+from interactions.api.serializers import CommentSerializer
 from interactions.models import Comment
-from interactions.serializers import CommentSerializer
 
 # ============================================================
 # Comment moderation list
