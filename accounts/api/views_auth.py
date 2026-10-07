@@ -2,14 +2,18 @@ from rest_framework import generics, status
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
 
 from .serializers import (
     AvatarUploadSerializer,
     ChangePasswordSerializer,
+    EmailVerificationConfirmSerializer,
+    EmailVerificationResendSerializer,
     LoginSerializer,
     LogoutSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
+    RegisterSerializer,
     UserProfileSerializer,
 )
 
@@ -164,5 +168,124 @@ class PasswordResetConfirmView(generics.GenericAPIView):
         serializer.save()
         return Response(
             {"detail": "Password has been reset. You can now log in."},
+            status=status.HTTP_200_OK,
+        )
+
+
+# ============================================================
+# Register
+# ============================================================
+
+
+class RegisterView(generics.CreateAPIView):
+    """
+    POST /api/v1/auth/register/
+    Create a new account (role=reader).
+    """
+
+    permission_classes = [AllowAny]
+    serializer_class = RegisterSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        return Response(
+            {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "message": (
+                    "Account created. Check your email to verify your address."
+                ),
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
+# ============================================================
+# Confirm email verification
+# ============================================================
+
+
+class VerifyEmailConfirmView(generics.GenericAPIView):
+    """
+    POST /api/v1/auth/verify-email/confirm/
+    Body: {"uidb64": "<base64-id>", "token": "<token>"}
+
+    The uidb64 and token come from the query string of the
+    verification email link. The frontend extracts them and
+    posts them here.
+
+    On success:
+    - is_active becomes True
+    - is_email_verified becomes True
+
+    Idempotent: calling this multiple times with the same valid
+    token succeeds every time. Invalid or expired tokens return
+    a 400 with a generic message (no enumeration).
+    """
+
+    permission_classes = [AllowAny]
+    serializer_class = EmailVerificationConfirmSerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            {"detail": "Email verified. You can now log in."},
+            status=status.HTTP_200_OK,
+        )
+
+
+# ============================================================
+# Resend verification email
+# ============================================================
+
+
+class ResendVerificationThrottle(AnonRateThrottle):
+    """
+    Rate limit: 3 resend requests per hour per IP.
+    Prevents an attacker from spamming a user's inbox.
+    """
+
+    scope = "resend_verification"
+    rate = "3/hour"
+
+
+class ResendVerificationView(generics.GenericAPIView):
+    """
+    POST /api/v1/auth/verify-email/resend/
+    Body: {"email": "user@example.com"}
+
+    Sends a new verification email if:
+    - The user exists
+    - The user is not yet verified
+    - The user has an email address
+    - The user has a usable password
+
+    Always returns 200, even if the email doesn't exist, to
+    prevent user enumeration.
+    """
+
+    permission_classes = [AllowAny]
+    serializer_class = EmailVerificationResendSerializer
+    throttle_classes = [ResendVerificationThrottle]
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            {
+                "detail": (
+                    "If an unverified account with that email exists, "
+                    "a new verification link has been sent."
+                )
+            },
             status=status.HTTP_200_OK,
         )

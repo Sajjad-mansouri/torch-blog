@@ -7,10 +7,13 @@ from .account import (
 from .auth import (
     AvatarUploadSerializer,
     ChangePasswordSerializer,
+    EmailVerificationConfirmSerializer,
+    EmailVerificationResendSerializer,
     LoginSerializer,
     LogoutSerializer,
     PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
+    RegisterSerializer,
     UserProfileSerializer,
 )
 
@@ -26,4 +29,7 @@ __all__ = [
     "ChangePasswordSerializer",
     "PasswordResetRequestSerializer",
     "PasswordResetConfirmSerializer",
+    "RegisterSerializer",
+    "EmailVerificationConfirmSerializer",
+    "EmailVerificationResendSerializer",
 ]

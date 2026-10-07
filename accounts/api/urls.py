@@ -9,6 +9,9 @@ from .views_auth import (
     MeView,
     PasswordResetConfirmView,
     PasswordResetRequestView,
+    RegisterView,
+    ResendVerificationView,
+    VerifyEmailConfirmView,
 )
 
 app_name = "auth"
@@ -36,5 +39,16 @@ urlpatterns = [
         "password-reset/confirm/",
         PasswordResetConfirmView.as_view(),
         name="password-reset-confirm",
+    ),
+    path("register/", RegisterView.as_view(), name="register"),
+    path(
+        "verify-email/confirm/",
+        VerifyEmailConfirmView.as_view(),
+        name="verify-email-confirm",
+    ),
+    path(
+        "verify-email/resend/",
+        ResendVerificationView.as_view(),
+        name="verify-email-resend",
     ),
 ]
