@@ -27,6 +27,8 @@ urlpatterns = [
     ),
     # Users
     path("users-list/", views.EditorUserListView.as_view(), name="editor-user-list"),
+    # Settings
+    path("settings/", views.EditorSiteSettingsView.as_view(), name="editor-settings"),
     # Router (actions on resources)
     path("", include(router.urls)),
 ]

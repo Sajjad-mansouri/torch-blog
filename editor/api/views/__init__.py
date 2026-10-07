@@ -5,6 +5,7 @@ from .posts import (
     PostDecisionViewSet,
     ReviewQueueView,
 )
+from .settings import EditorSiteSettingsView
 from .taxonomy import EditorCategoryViewSet, EditorTagViewSet
 from .users import EditorUserDetailViewSet, EditorUserListView
 
@@ -19,4 +20,5 @@ __all__ = [
     "EditorUserDetailViewSet",
     "EditorCategoryViewSet",
     "EditorTagViewSet",
+    "EditorSiteSettingsView",
 ]
