@@ -26,6 +26,7 @@ urlpatterns = [
     path("api/v1/", include("blog.api.urls")),
     path("api/v1/", include("interactions.api.urls")),
     path("api/v1/editor/", include("editor.api.urls")),
+    path("api/v1/auth/", include("accounts.api.urls")),
 ]
 
 if settings.DEBUG:
