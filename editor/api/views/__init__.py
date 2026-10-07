@@ -1,3 +1,4 @@
+from .comments import CommentModerationViewSet
 from .posts import (
     EditorPostListView,
     FeaturedPostsViewSet,
@@ -10,4 +11,5 @@ __all__ = [
     "EditorPostListView",
     "PostDecisionViewSet",
     "FeaturedPostsViewSet",
+    "CommentModerationViewSet",
 ]
