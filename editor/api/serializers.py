@@ -71,3 +71,23 @@ class FeaturedReorderSerializer(serializers.Serializer):
         if len(ids) != len(set(ids)):
             raise serializers.ValidationError("Duplicate post IDs in payload.")
         return value
+
+
+# editor/serializers.py
+class TagMergeSerializer(serializers.Serializer):
+    """
+    Payload for merging tags.
+    Moves all posts from `source_ids` to `target_id`, then deletes
+    the source tags.
+    """
+
+    source_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        allow_empty=False,
+    )
+    target_id = serializers.IntegerField()
+
+    def validate(self, attrs):
+        if attrs["target_id"] in attrs["source_ids"]:
+            raise serializers.ValidationError("Target tag cannot be in source_ids.")
+        return attrs

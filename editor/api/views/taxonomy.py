@@ -1,11 +1,15 @@
 # editor/views_taxonomy.py
+from django.db import transaction
 from django.db.models import Count, Q
 from rest_framework import serializers, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
 
 from blog.api.permissions import IsEditor
 from blog.api.serializers import CategorySerializer, TagSerializer
 from blog.models import Category, Tag
+from editor.api.serializers import TagMergeSerializer
 
 # ============================================================
 # Category CRUD
@@ -123,3 +127,32 @@ class EditorTagViewSet(viewsets.ModelViewSet):
                 }
             )
         instance.delete()
+
+    @action(detail=False, methods=["post"], url_path="merge")
+    def merge(self, request):
+        payload = TagMergeSerializer(data=request.data)
+        payload.is_valid(raise_exception=True)
+
+        source_ids = payload.validated_data["source_ids"]
+        target_id = payload.validated_data["target_id"]
+
+        source_tags = Tag.objects.filter(pk__in=source_ids)
+        if source_tags.count() != len(source_ids):
+            raise ValidationError({"source_ids": "Some tag IDs do not exist."})
+
+        try:
+            target = Tag.objects.get(pk=target_id)
+        except Tag.DoesNotExist:
+            raise ValidationError({"target_id": "Target tag does not exist."}) from None
+
+        with transaction.atomic():
+            for tag in source_tags:
+                # Move posts from source tag to target tag
+                for post in tag.posts.all():
+                    post.tags.add(target)
+                    post.tags.remove(tag)
+                tag.delete()
+
+            target.update_usage_count()
+
+        return Response(TagSerializer(target).data)
