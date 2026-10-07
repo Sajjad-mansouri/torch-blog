@@ -1,11 +1,14 @@
 from django.core.cache import cache
 from django.db.models import Count, Prefetch, Q
+from django.urls import reverse
 from rest_framework import generics, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from accounts.serializers import AuthorBriefSerializer
 from blog.models import Category, Post, Tag
 from interactions.models import Comment
 
@@ -16,12 +19,17 @@ from .serializers import (
     CategorySerializer,
     PostCardSerializer,
     PostDetailSerializer,
+    SearchSuggestItemSerializer,
     TagSerializer,
 )
 from .services import (
     get_author_other_posts,
     get_similar_posts,
+    normalize_query,
     record_view,
+    search_authors,
+    search_posts,
+    search_tags,
 )
 
 
@@ -430,3 +438,190 @@ class TagViewSet(PostOrderingMixin, viewsets.ReadOnlyModelViewSet):
             posts_qs, many=True, context={"request": request}
         )
         return Response(serializer.data)
+
+
+class SearchAPIView(APIView):
+    """
+    GET /api/v1/search/?q=<query>&type=<post|author|tag>
+
+    - `q` is required (min 2 characters).
+    - `type` is optional. If omitted, searches all types.
+    - `limit` optionally caps per-type results in the mixed view.
+    - When `type` is given, results are paginated.
+
+    Response:
+    - Mixed: { "query": "...", "posts": {...}, "authors": {...}, "tags": {...} }
+    - Typed: { "query": "...", "results": [...], "count": N, ... }
+    """
+
+    permission_classes = [AllowAny]
+    DEFAULT_LIMIT = 5
+    MAX_LIMIT = 20
+
+    def get(self, request):
+        raw_query = request.query_params.get("q", "")
+        query = normalize_query(raw_query)
+
+        if query is None:
+            raise ValidationError(
+                {"q": "Query must be at least 2 characters after trimming."}
+            )
+
+        result_type = request.query_params.get("type")
+        if result_type in (None, "", "all"):
+            return Response(self._mixed_response(query, request))
+
+        if result_type == "post":
+            return self._typed_post_response(query, request)
+
+        if result_type == "author":
+            return self._typed_author_response(query, request)
+
+        if result_type == "tag":
+            return self._typed_tag_response(query, request)
+
+        raise ValidationError({"type": "Must be one of :post, author, tag"})
+
+    def _mixed_response(self, query, request):
+        limit = self._get_limit(request)
+        posts_qs = search_posts(query, limit=limit)
+        authors_qs = search_authors(query, limit=limit)
+        tags_qs = search_tags(query, limit=limit)
+        return {
+            "query": query,
+            "posts": {
+                "count": posts_qs.count()
+                if hasattr(posts_qs, "count")
+                else len(posts_qs),
+                "results": PostCardSerializer(
+                    posts_qs, many=True, context={"request": request}
+                ).data,
+            },
+            "authors": {
+                "count": authors_qs.count()
+                if hasattr(authors_qs, "count")
+                else len(authors_qs),
+                "results": AuthorBriefSerializer(
+                    authors_qs, many=True, context={"request": request}
+                ).data,
+            },
+            "tags": {
+                "count": tags_qs.count() if hasattr(tags_qs, "count") else len(tags_qs),
+                "results": TagSerializer(tags_qs, many=True).data,
+            },
+        }
+
+    def _get_limit(self, request):
+        try:
+            limit = int(request.query_params.get("limit", self.DEFAULT_LIMIT))
+        except (TypeError, ValueError):
+            raise ValidationError({"limit": "Must be an integer."}) from None
+        if limit < 1 or limit > self.MAX_LIMIT:
+            raise ValidationError({"limit": f"Must be between 1 and {self.MAX_LIMIT}."})
+        return limit
+
+    def _typed_post_response(self, query, request):
+        qs = search_posts(query)
+        return self._paginated_response(qs, request, PostCardSerializer)
+
+    def _typed_author_response(self, query, request):
+        qs = search_authors(query)
+        return self._paginated_response(qs, request, AuthorBriefSerializer)
+
+    def _typed_tag_response(self, query, request):
+        qs = search_tags(query)
+        return self._paginated_response(qs, request, TagSerializer)
+
+    def _paginated_response(
+        self, qs, request, serializer_cls, use_post_pagination=True
+    ):
+        paginator = PostPagination() if use_post_pagination else None
+        if paginator:
+            page = paginator.paginate_queryset(qs, request, view=self)
+            if page is not None:
+                serializer = serializer_cls(
+                    page, many=True, context={"request": request}
+                )
+                return Response(
+                    {
+                        "query": request.query_params.get("q"),
+                        **paginator.get_paginated_response(serializer.data).data,
+                    }
+                )
+        serializer = serializer_cls(qs, many=True, context={"request": request})
+
+        return Response(
+            {
+                "query": request.query_params.get("q"),
+                "count": qs.count() if hasattr(qs, "count") else len(qs),
+                "results": serializer.data,
+            }
+        )
+
+
+class SearchSuggestView(APIView):
+    """
+    GET /api/v1/search/suggest/?q=<query>
+
+    Returns a flat list of suggestions across posts, tags, and authors.
+    Optimized for autocomplete widgets — small payload, fast.
+    """
+
+    permission_classes = [AllowAny]
+
+    PER_TYPE_LIMIT = 5
+
+    def get(self, request):
+        raw_query = request.query_params.get("q", "")
+        query = normalize_query(raw_query)
+
+        if query is None:
+            return Response({"query": "", "results": []})
+
+        suggestions = []
+
+        # Posts (title only)
+        posts = search_posts(query, limit=self.PER_TYPE_LIMIT)
+        for post in posts:
+            suggestions.append(
+                {
+                    "type": "post",
+                    "id": post.pk,
+                    "label": post.title,
+                    "slug": post.slug,
+                    "url": reverse("blog:post-detail", kwargs={"slug": post.slug}),
+                }
+            )
+
+        # Tags
+        tags = search_tags(query, limit=self.PER_TYPE_LIMIT)
+        for tag in tags:
+            suggestions.append(
+                {
+                    "type": "tag",
+                    "id": tag.pk,
+                    "label": tag.name,
+                    "slug": tag.slug,
+                    "url": f"/tag/{tag.slug}/",
+                }
+            )
+
+        # Authors
+        authors = search_authors(query, limit=self.PER_TYPE_LIMIT)
+        for author in authors:
+            suggestions.append(
+                {
+                    "type": "author",
+                    "id": author.pk,
+                    "label": author.display_name,
+                    "slug": author.username,
+                    "url": f"/author/{author.username}/",
+                }
+            )
+
+        return Response(
+            {
+                "query": query,
+                "results": SearchSuggestItemSerializer(suggestions, many=True).data,
+            }
+        )

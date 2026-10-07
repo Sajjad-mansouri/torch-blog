@@ -313,3 +313,27 @@ class PostDetailSerializer(serializers.ModelSerializer):
     def get_author_other_posts(self, obj):
         others = self.context.get("author_other_posts", [])
         return PostCardSerializer(others, many=True).data
+
+
+class SearchResultSerializer(serializers.Serializer):
+    """
+    Wraps search results for a single type.
+    Used by the mixed search endpoint.
+    """
+
+    type = serializers.CharField()
+    count = serializers.IntegerField()
+    results = serializers.ListField()
+
+
+class SearchSuggestItemSerializer(serializers.Serializer):
+    """
+    A single suggestion item for the autocomplete endpoint.
+    Kept intentionally minimal so the payload stays small.
+    """
+
+    type = serializers.ChoiceField(choices=["post", "tag", "author"])
+    id = serializers.IntegerField()
+    label = serializers.CharField()
+    slug = serializers.CharField()
+    url = serializers.CharField()
