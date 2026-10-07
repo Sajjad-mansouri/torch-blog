@@ -83,6 +83,23 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return value.strip() if value else value
 
 
+class AvatarUploadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["avatar"]
+
+    def validate_avatar(self, value):
+        # Size check
+        if value and value.size > 2 * 1024 * 1024:
+            raise serializers.ValidationError("Avatar must be smaller than 2 MB.")
+        # Extension check
+        if value:
+            ext = value.name.rsplit(".", 1)[-1].lower()
+            if ext not in ("jpg", "jpeg", "png", "webp"):
+                raise serializers.ValidationError("Avatar must be JPG, PNG, or WebP.")
+        return value
+
+
 # ============================================================
 # Login
 # ============================================================

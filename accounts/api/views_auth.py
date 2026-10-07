@@ -1,8 +1,14 @@
 from rest_framework import generics, status
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from .serializers import LoginSerializer, LogoutSerializer
+from .serializers import (
+    AvatarUploadSerializer,
+    LoginSerializer,
+    LogoutSerializer,
+    UserProfileSerializer,
+)
 
 # ============================================================
 # Login
@@ -43,3 +49,48 @@ class LogoutView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ============================================================
+# Me — profile
+# ============================================================
+
+
+class MeView(generics.RetrieveUpdateAPIView):
+    """
+    GET   /api/v1/auth/me/
+    PATCH /api/v1/auth/me/
+    """
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserProfileSerializer
+
+    def get_object(self):
+        return self.request.user
+
+
+class AvatarUploadView(generics.GenericAPIView):
+    """
+    POST /api/v1/auth/me/avatar/
+    Upload a new avatar.
+    """
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = AvatarUploadSerializer
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        serializer = self.get_serializer(
+            request.user,
+            data=request.data,
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            UserProfileSerializer(
+                request.user,
+                context={"request": request},
+            ).data
+        )

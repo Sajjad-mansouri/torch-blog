@@ -4,7 +4,12 @@ from .account import (
     AuthorProfileSerializer,
     SocialLinkSerializer,
 )
-from .auth import LoginSerializer, LogoutSerializer, UserProfileSerializer
+from .auth import (
+    AvatarUploadSerializer,
+    LoginSerializer,
+    LogoutSerializer,
+    UserProfileSerializer,
+)
 
 __all__ = [
     "SocialLinkSerializer",
@@ -14,4 +19,5 @@ __all__ = [
     "UserProfileSerializer",
     "LoginSerializer",
     "LogoutSerializer",
+    "AvatarUploadSerializer",
 ]
