@@ -6,9 +6,13 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import serializers
 from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.token_blacklist.models import (
+    BlacklistedToken,
+    OutstandingToken,
+)
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from accounts.tasks import send_email
@@ -264,3 +268,82 @@ class PasswordResetRequestSerializer(serializers.Serializer):
             for u in active_users
             if u.has_usable_password() and _unicode_ci_compare(email, u.email)
         )
+
+
+# ============================================================
+# Password reset — confirm
+# ============================================================
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    """
+    Set a new password using the uidb64 + token from the email link.
+
+    Mirrors Django's PasswordResetConfirmView but for JSON.
+    """
+
+    uidb64 = serializers.CharField()
+    token = serializers.CharField()
+    password = serializers.CharField(
+        write_only=True,
+        min_length=8,
+        style={"input_type": "password"},
+    )
+    password_confirm = serializers.CharField(
+        write_only=True,
+        style={"input_type": "password"},
+    )
+
+    def validate_password(self, value):
+        try:
+            validate_password(value)
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(list(e.messages)) from None
+        return value
+
+    def validate(self, attrs):
+        # ------------------------------------------------------
+        # 1. Decode uidb64 → user
+        # ------------------------------------------------------
+        try:
+            uid = urlsafe_base64_decode(attrs["uidb64"]).decode()
+            user = User.objects.get(pk=uid)
+        except (
+            TypeError,
+            ValueError,
+            OverflowError,
+            User.DoesNotExist,
+        ):
+            # Same message for all failures, to prevent enumeration.
+            raise serializers.ValidationError(
+                {"token": "The reset link is invalid or has expired."}
+            ) from None
+
+        # ------------------------------------------------------
+        # 2. Check the token
+        # ------------------------------------------------------
+        if not default_token_generator.check_token(user, attrs["token"]):
+            raise serializers.ValidationError(
+                {"token": "The reset link is invalid or has expired."}
+            )
+
+        # ------------------------------------------------------
+        # 3. Check password confirmation
+        # ------------------------------------------------------
+        if attrs["password"] != attrs["password_confirm"]:
+            raise serializers.ValidationError(
+                {"password_confirm": "Passwords do not match."}
+            )
+
+        # Attach user for save()
+        attrs["user"] = user
+        return attrs
+
+    def save(self, **kwargs):
+        user = self.validated_data["user"]
+        user.set_password(self.validated_data["password"])
+        user.save(update_fields=["password"])
+
+        # Blacklist every outstanding refresh token for this user.
+        for token in OutstandingToken.objects.filter(user=user):
+            BlacklistedToken.objects.get_or_create(token=token)

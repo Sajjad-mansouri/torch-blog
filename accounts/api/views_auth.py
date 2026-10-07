@@ -8,6 +8,7 @@ from .serializers import (
     ChangePasswordSerializer,
     LoginSerializer,
     LogoutSerializer,
+    PasswordResetConfirmSerializer,
     PasswordResetRequestSerializer,
     UserProfileSerializer,
 )
@@ -136,4 +137,32 @@ class PasswordResetRequestView(generics.GenericAPIView):
                     "If an account with that email exists, a reset link has been sent."
                 )
             }
+        )
+
+
+class PasswordResetConfirmView(generics.GenericAPIView):
+    """
+    POST /api/v1/auth/password-reset/confirm/
+    Body: {
+        "uidb64": "MQ",
+        "token": "abc-123-def",
+        "password": "newpassword789",
+        "password_confirm": "newpassword789"
+    }
+
+    The uidb64 and token come from the email link's query string.
+    The frontend extracts them and posts them here along with the
+    new password.
+    """
+
+    permission_classes = [AllowAny]
+    serializer_class = PasswordResetConfirmSerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {"detail": "Password has been reset. You can now log in."},
+            status=status.HTTP_200_OK,
         )
