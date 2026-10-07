@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework import serializers
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
@@ -123,3 +124,18 @@ class LoginSerializer(serializers.Serializer):
             "refresh": str(refresh),
             "user": UserProfileSerializer(user, context=self.context).data,
         }
+
+
+# ============================================================
+# Logout
+# ============================================================
+
+
+class LogoutSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+
+    def save(self, **kwargs):
+        try:
+            RefreshToken(self.validated_data["refresh"]).blacklist()
+        except TokenError:
+            pass
