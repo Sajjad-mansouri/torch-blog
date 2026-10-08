@@ -27,6 +27,7 @@ class SiteSettings(models.Model):
     project_goal = models.TextField(blank=True, help_text="goal (Markdown)")
     project_repo_url = models.URLField(blank=True)
     project_demo_url = models.URLField(blank=True)
+    contact_email = models.EmailField(blank=True, default="")
 
     # Footer
     footer_text = models.CharField(max_length=300, blank=True)
