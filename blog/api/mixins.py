@@ -17,7 +17,7 @@ class PostOrderingMixin:
     }
     DEFAULT_ORDER = "-published_at"
 
-    def apply_ordering(self, qs, request):
+    def _apply_ordering(self, qs, request):
         ordering = request.query_params.get("ordering")
         if ordering and ordering not in self.ORDER_MAP:
             raise ValidationError(

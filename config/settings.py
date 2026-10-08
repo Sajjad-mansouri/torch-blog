@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     # third pary app
     "rest_framework",
     "rest_framework_simplejwt",
+    "drf_spectacular",
     "rest_framework_simplejwt.token_blacklist",
     "django_ckeditor_5",
     "django_filters",
@@ -264,21 +265,23 @@ CACHES = {
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-        "rest_framework.authentication.SessionAuthentication",  # for admin / Browsable API
+        "rest_framework.authentication.SessionAuthentication",
     ],
-    "DEFAULT_THROTTLE_CLASS": [
+    "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
         "rest_framework.throttling.UserRateThrottle",
     ],
-    "DEFAULT_THROTTLE_RATES": {"anon": "60/minute", "user": "300/minute"},
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "60/minute",
+        "user": "300/minute",
+    },
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.OrderingFilter",
         "rest_framework.filters.SearchFilter",
     ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
-
-
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=14),
@@ -309,3 +312,53 @@ AUTHENTICATION_BACKENDS = [
 FRONTEND_URL = config("FRONTEND_URL")
 CELERY_BROKER_URL = config("CELERY_BROKER_URL")
 HOST_ASYNC_ABILITY = config("HOST_ASYNC_ABILITY", cast=bool)
+
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Torch API",
+    "DESCRIPTION": (
+        "REST API for Torch, a full-featured blogging platform.\n\n"
+        "Roles:\n"
+        "- **Reader** — read, like, bookmark, comment\n"
+        "- **Author** — everything a reader does, plus write and submit posts\n"
+        "- **Editor** — everything an author does, plus review and publish\n"
+    ),
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    # Where the schema lives (for splitting across files later)
+    "SCHEMA_PATH_PREFIX": "/api/v1",
+    "SCHEMA_PATH_PREFIX_TRIM": False,
+    # Auth
+    "SECURITY": [
+        {"jwtAuth": []},
+    ],
+    # UI behavior
+    "SWAGGER_UI_SETTINGS": {
+        "deepLinking": True,
+        "persistAuthorization": True,
+        "displayOperationId": False,
+        "filter": True,
+        "docExpansion": "none",
+    },
+    "SWAGGER_UI_FAVICON_HREF": "/static/favicon.ico",
+    "REDOC_UI_SETTINGS": {
+        "hideDownloadButton": False,
+    },
+    # Auto-tagging: group operations by their URL prefix
+    "TAGS": [
+        {"name": "auth", "description": "Register, login, tokens, profile"},
+        {"name": "posts", "description": "Blog posts"},
+        {"name": "categories", "description": "Categories"},
+        {"name": "tags", "description": "Tags"},
+        {"name": "authors", "description": "Author profiles"},
+        {"name": "search", "description": "Search and autocomplete"},
+        {"name": "interactions", "description": "Likes, bookmarks, comments"},
+        {"name": "notifications", "description": "User notifications"},
+        {"name": "editor", "description": "Editorial dashboard"},
+        {"name": "landing", "description": "Public landing page and contact"},
+    ],
+    # Component naming
+    "COMPONENT_SPLIT_REQUEST": True,
+    # Sorting
+    "SORT_OPERATIONS": False,
+}

@@ -1,4 +1,5 @@
 # blog/serializers.py
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 # Import author serializers from accounts
@@ -275,6 +276,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
             "author_other_posts",
         ]
 
+    @extend_schema_field(serializers.BooleanField)
     def get_is_liked(self, obj):
         request = self.context.get("request")
         if not request or not request.is_authenticated:
@@ -283,6 +285,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
         liked_post_ids = self.context.get("liked_post_ids", set())
         return obj.id in liked_post_ids
 
+    @extend_schema_field(serializers.BooleanField)
     def get_is_bookmarked(self, obj):
         request = self.context.get("request")
         if not request or not request.user.is_authenticated:
@@ -290,6 +293,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
         bookmarked_post_ids = self.context.get("bookmarked_post_ids", set())
         return obj.id in bookmarked_post_ids
 
+    @extend_schema_field(CommentSerializer(many=True))
     def get_comments(self, obj):
         """
         Top-level comments with their replies.
@@ -306,10 +310,12 @@ class PostDetailSerializer(serializers.ModelSerializer):
 
         return CommentSerializer(top_level, many=True, context=self.context).data
 
+    @extend_schema_field(PostCardSerializer(many=True))
     def get_similar_posts(self, obj):
         similar = self.context.get("similar_posts", [])
         return PostCardSerializer(similar, many=True).data
 
+    @extend_schema_field(PostCardSerializer(many=True))
     def get_author_other_posts(self, obj):
         others = self.context.get("author_other_posts", [])
         return PostCardSerializer(others, many=True).data

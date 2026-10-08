@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from accounts.models import SocialLink
@@ -26,6 +27,7 @@ class AuthorBriefSerializer(serializers.Serializer):
     display_name = serializers.CharField(read_only=True)
     avatar_url = serializers.SerializerMethodField()
 
+    @extend_schema_field(serializers.URLField(allow_null=True))
     def get_avatar_url(self, obj):
         request = self.context.get("request")
         url = obj.avatar_url

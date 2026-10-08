@@ -32,7 +32,7 @@ class PostQuerySet(models.QuerySet):
         -Annotate like_count, comment,  bookmark_count
         """
 
-        return self.selected_related("author", "category").annotate(
+        return self.select_related("author", "category").annotate(
             like_count=Count("likes", distinct=True),
             comment_count=Count(
                 "comments",

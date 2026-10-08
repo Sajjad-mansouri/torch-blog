@@ -1,9 +1,12 @@
 from django.core.cache import cache
 from django.db.models import Count, Prefetch, Q, Sum
 from django.urls import reverse
+from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
+from rest_framework.filters import SearchFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -21,6 +24,7 @@ from .permissions import (
 )
 from .serializers import (
     CategorySerializer,
+    HomeSerializer,
     PostCardSerializer,
     PostDetailSerializer,
     PostWriteSerializer,
@@ -40,6 +44,9 @@ from .services import (
 )
 
 
+@extend_schema(
+    responses=HomeSerializer,
+)
 class HomeAPIView(APIView):
     """
     GET /api/v1/home/
@@ -56,6 +63,7 @@ class HomeAPIView(APIView):
     """
 
     permission_classes = [AllowAny]
+    filter_backends = []
     CACHE_KEY = "home_page_data"
     CACHE_TTL = 300
 
@@ -157,9 +165,8 @@ class PostListAPIView(PostOrderingMixin, generics.ListAPIView):
     pagination_class = PostPagination
     filterset_class = PostFilter
     filter_backends = [
-        "django_filters.rest_framework.DjangoFilterBackend",
-        "rest_framework.filters.SearchFilter",
-        # OrderingFilter removed
+        DjangoFilterBackend,
+        SearchFilter,
     ]
     search_fields = ["title", "summary"]
 

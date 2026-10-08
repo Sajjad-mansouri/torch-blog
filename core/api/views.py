@@ -1,6 +1,7 @@
 # core/views_landing.py
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -14,10 +15,11 @@ from .serializers_landing import (
     ApiEndpointSerializer,
     ContactMessageSerializer,
     FeatureGroupSerializer,
+    LandingSerializer,
+    LandingSocialLinkSerializer,
     ProjectInfoSerializer,
     RoadmapPhaseSerializer,
     ScreenshotSerializer,
-    SocialLinkSerializer,
     StatisticSerializer,
     TechCategorySerializer,
 )
@@ -28,6 +30,9 @@ from .services_landing import get_landing_data
 # ============================================================
 
 
+@extend_schema(
+    responses=LandingSerializer,
+)
 class LandingView(APIView):
     """
     GET /api/v1/landing/
@@ -47,6 +52,7 @@ class LandingView(APIView):
     """
 
     permission_classes = [AllowAny]
+    filter_backends = []
 
     def get(self, request):
         data = get_landing_data()
@@ -75,7 +81,9 @@ class LandingView(APIView):
             ).data,
             "roadmap": RoadmapPhaseSerializer(data["roadmap"], many=True).data,
             "stats": StatisticSerializer(data["stats"], many=True).data,
-            "social_links": SocialLinkSerializer(data["social_links"], many=True).data,
+            "social_links": LandingSocialLinkSerializer(
+                data["social_links"], many=True
+            ).data,
         }
         return Response(payload)
 

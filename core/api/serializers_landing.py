@@ -1,4 +1,5 @@
 # core/serializers_landing.py
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from core.models import (
@@ -52,6 +53,7 @@ class TechItemSerializer(serializers.ModelSerializer):
             "order",
         ]
 
+    @extend_schema_field(serializers.URLField(allow_null=True))
     def get_icon_image_url(self, obj):
         return absolute_url(self.context.get("request"), obj.icon_image)
 
@@ -63,6 +65,7 @@ class TechCategorySerializer(serializers.ModelSerializer):
         model = TechCategory
         fields = ["id", "name", "slug", "icon", "order", "items"]
 
+    @extend_schema_field(TechItemSerializer(many=True))
     def get_items(self, obj):
         items = obj.items.filter(is_active=True).order_by("order", "name")
         return TechItemSerializer(items, many=True, context=self.context).data
@@ -88,6 +91,7 @@ class FeatureItemSerializer(serializers.ModelSerializer):
             "order",
         ]
 
+    @extend_schema_field(serializers.URLField(allow_null=True))
     def get_icon_image_url(self, obj):
         return absolute_url(self.context.get("request"), obj.icon_image)
 
@@ -99,6 +103,7 @@ class FeatureGroupSerializer(serializers.ModelSerializer):
         model = FeatureGroup
         fields = ["id", "title", "slug", "description", "icon", "order", "items"]
 
+    @extend_schema_field(FeatureItemSerializer(many=True))
     def get_items(self, obj):
         items = obj.items.filter(is_active=True).order_by("order", "title")
         return FeatureItemSerializer(items, many=True, context=self.context).data
@@ -138,6 +143,7 @@ class ScreenshotSerializer(serializers.ModelSerializer):
         model = Screenshot
         fields = ["id", "title", "caption", "image_url", "order"]
 
+    @extend_schema_field(serializers.URLField(allow_null=True))
     def get_image_url(self, obj):
         return absolute_url(self.context.get("request"), obj.image)
 
@@ -169,6 +175,7 @@ class RoadmapPhaseSerializer(serializers.ModelSerializer):
             "items",
         ]
 
+    @extend_schema_field(RoadmapItemSerializer(many=True))
     def get_items(self, obj):
         items = obj.items.order_by("order", "text")
         return RoadmapItemSerializer(items, many=True).data
@@ -185,7 +192,7 @@ class StatisticSerializer(serializers.ModelSerializer):
         fields = ["id", "label", "value", "icon", "order"]
 
 
-class SocialLinkSerializer(serializers.ModelSerializer):
+class LandingSocialLinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = SocialLink
         fields = ["id", "platform", "url", "icon", "username", "order"]
@@ -229,7 +236,7 @@ class LandingSerializer(serializers.Serializer):
     screenshots = ScreenshotSerializer(many=True, read_only=True)
     roadmap = RoadmapPhaseSerializer(many=True, read_only=True)
     stats = StatisticSerializer(many=True, read_only=True)
-    social_links = SocialLinkSerializer(many=True, read_only=True)
+    social_links = LandingSocialLinkSerializer(many=True, read_only=True)
 
 
 # ============================================================
