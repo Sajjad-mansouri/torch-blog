@@ -27,6 +27,7 @@ urlpatterns = [
     path("api/v1/", include("interactions.api.urls")),
     path("api/v1/editor/", include("editor.api.urls")),
     path("api/v1/auth/", include("accounts.api.urls")),
+    path("api/v1/notifications/", include("notifications.api.urls")),
 ]
 
 if settings.DEBUG:

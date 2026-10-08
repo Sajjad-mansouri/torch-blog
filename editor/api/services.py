@@ -3,6 +3,11 @@ from django.db import transaction
 from django.utils import timezone
 
 from blog.models import Post
+from notifications.services import (
+    notify_post_approved,
+    notify_post_changes_requested,
+    notify_post_rejected,
+)
 
 # ============================================================
 # Approval
@@ -33,6 +38,7 @@ def approve_post(post, editor):
         post.published_at = timezone.now()
 
     post.save()
+    notify_post_approved(post, editor)
     return post
 
 
@@ -67,6 +73,7 @@ def reject_post(post, editor, reason):
     post.rejection_reason = reason.strip()
     post.changes_requested_note = ""
     post.save()
+    notify_post_rejected(post, editor, reason)
     return post
 
 
@@ -98,6 +105,7 @@ def request_changes(post, editor, note):
     post.changes_requested_note = note.strip()
     post.rejection_reason = ""
     post.save()
+    notify_post_changes_requested(post, editor, note)
     return post
 
 
