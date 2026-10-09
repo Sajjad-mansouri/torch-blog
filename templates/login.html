@@ -1,0 +1,109 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — Torch</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'css/blog/posts.css' %}">
+  <link rel="stylesheet" href="{% static 'css/blog/auth.css' %}">
+</head>
+<body class="auth-body">
+
+<main class="auth-page">
+
+  <a href="/" class="auth-brand" aria-label="Torch home">
+    <span class="brand__mark">T</span>
+    <span class="brand__name">Torch</span>
+  </a>
+
+  <div class="auth-card">
+
+    <header class="auth-card__header">
+      <h1 class="auth-card__title">Welcome back</h1>
+      <p class="auth-card__subtitle">
+        Log in to your Torch account to continue.
+      </p>
+    </header>
+
+    <form id="login-form" class="auth-form" novalidate autocomplete="on">
+
+      <div class="auth-field">
+        <label for="login-username" class="auth-label">Username</label>
+        <input
+          type="text"
+          id="login-username"
+          name="username"
+          class="auth-input"
+          autocomplete="username"
+          autocapitalize="none"
+          autocorrect="off"
+          spellcheck="false"
+          required
+        >
+        <span class="auth-field-error" id="login-username-error"></span>
+      </div>
+
+      <div class="auth-field">
+        <label for="login-password" class="auth-label">Password</label>
+        <div class="auth-input-wrap">
+          <input
+            type="password"
+            id="login-password"
+            name="password"
+            class="auth-input"
+            autocomplete="current-password"
+            required
+          >
+          <button
+            type="button"
+            class="auth-input-toggle"
+            id="login-password-toggle"
+            aria-label="Show password"
+            aria-pressed="false"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+                 aria-hidden="true">
+              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+        <span class="auth-field-error" id="login-password-error"></span>
+      </div>
+
+      <div class="auth-error" id="login-error" hidden></div>
+
+      <button type="submit" class="auth-submit" id="login-submit">
+        Log in
+      </button>
+
+    </form>
+
+    <footer class="auth-card__footer">
+      <p>
+        Don't have an account?
+        <a href="/register/" id="login-register-link">Create one</a>
+      </p>
+      <p>
+        <a href="/password-reset-request/">Forgot your password?</a>
+      </p>
+    </footer>
+
+  </div>
+
+  <a href="/" class="auth-back">← Back to home</a>
+
+</main>
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/blog/login.js' %}"></script>
+
+</body>
+</html>
