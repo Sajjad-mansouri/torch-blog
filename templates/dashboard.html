@@ -1,0 +1,593 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}Dashboard — Torch{% endblock %}
+
+{% block style %}
+  <link rel="stylesheet" href="{% static 'css/blog/posts.css' %}">
+  <link rel="stylesheet" href="{% static 'css/blog/dashboard.css' %}">
+{% endblock %}
+
+{% block main %}
+<main class="page page--dashboard">
+
+  <!-- Loading gate: until we know the user is authenticated -->
+  <div id="dashboard-gate" class="dashboard-gate">
+    <div class="auth-loading-spinner" aria-hidden="true"></div>
+    <p class="dashboard-gate__text">Loading your dashboard…</p>
+  </div>
+
+  <!-- Dashboard layout (revealed after auth check) -->
+  <div id="dashboard-root" class="dashboard" hidden>
+
+    <!-- ============================================================
+         Sidebar / tabs
+         ============================================================ -->
+    <aside class="dashboard__sidebar" aria-label="Dashboard sections">
+
+      <div class="dashboard__user" id="dashboard-user" hidden>
+        <img
+          class="dashboard__avatar"
+          id="dashboard-avatar"
+          src=""
+          alt=""
+        >
+        <div class="dashboard__user-meta">
+          <span class="dashboard__user-name" id="dashboard-user-name"></span>
+          <span class="dashboard__user-role" id="dashboard-user-role"></span>
+        </div>
+      </div>
+
+      <nav class="dashboard__tabs" id="dashboard-tabs" aria-label="Dashboard tabs">
+        <button
+          type="button"
+          class="dashboard__tab is-active"
+          data-tab="overview"
+          aria-selected="true"
+        >
+          <svg class="dashboard__tab-icon" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          <span>Overview</span>
+        </button>
+
+        <button
+          type="button"
+          class="dashboard__tab"
+          data-tab="bookmarks"
+          aria-selected="false"
+        >
+          <svg class="dashboard__tab-icon" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span>Bookmarks</span>
+        </button>
+
+        <button
+          type="button"
+          class="dashboard__tab"
+          data-tab="likes"
+          aria-selected="false"
+        >
+          <svg class="dashboard__tab-icon" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21.2l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z"/>
+          </svg>
+          <span>Likes</span>
+        </button>
+
+        <button
+          type="button"
+          class="dashboard__tab"
+          data-tab="notifications"
+          aria-selected="false"
+        >
+          <svg class="dashboard__tab-icon" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.7 21a2 2 0 0 1-3.4 0"/>
+          </svg>
+          <span>Notifications</span>
+          <span class="dashboard__tab-badge" id="notif-badge" hidden></span>
+        </button>
+
+        <button
+          type="button"
+          class="dashboard__tab"
+          data-tab="profile"
+          aria-selected="false"
+        >
+          <svg class="dashboard__tab-icon" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M4 21v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/>
+          </svg>
+          <span>Profile</span>
+        </button>
+      </nav>
+
+    </aside>
+
+    <!-- ============================================================
+         Main content
+         ============================================================ -->
+    <section class="dashboard__content" aria-live="polite">
+
+      <!-- --------------------------------------------------------
+           Overview
+           -------------------------------------------------------- -->
+      <div class="dashboard__panel is-active" data-panel="overview" id="panel-overview">
+
+        <header class="dashboard__panel-header">
+          <h1 class="dashboard__panel-title">Overview</h1>
+          <p class="dashboard__panel-subtitle" id="overview-greeting">
+            Welcome back.
+          </p>
+        </header>
+
+        <div class="dashboard__stats" id="overview-stats">
+          <a class="stat-card" href="/dashboard/?tab=bookmarks" data-goto-tab="bookmarks">
+            <span class="stat-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+              </svg>
+            </span>
+            <span class="stat-card__value" id="stat-bookmarks">—</span>
+            <span class="stat-card__label">Bookmarks</span>
+          </a>
+
+          <a class="stat-card" href="/dashboard/?tab=likes" data-goto-tab="likes">
+            <span class="stat-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21.2l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z"/>
+              </svg>
+            </span>
+            <span class="stat-card__value" id="stat-likes">—</span>
+            <span class="stat-card__label">Liked posts</span>
+          </a>
+
+          <a class="stat-card" href="/dashboard/?tab=notifications" data-goto-tab="notifications">
+            <span class="stat-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.7 21a2 2 0 0 1-3.4 0"/>
+              </svg>
+            </span>
+            <span class="stat-card__value" id="stat-notifications">—</span>
+            <span class="stat-card__label">Notifications</span>
+          </a>
+        </div>
+
+        <section class="dashboard__section">
+          <header class="dashboard__section-header">
+            <h2 class="dashboard__section-title">Recent bookmarks</h2>
+            <a class="dashboard__section-more" href="/dashboard/?tab=bookmarks" data-goto-tab="bookmarks">
+              View all →
+            </a>
+          </header>
+          <div class="post-grid" id="overview-bookmarks"></div>
+          <div class="dashboard__empty" id="overview-bookmarks-empty" hidden>
+            <p>You haven't bookmarked any posts yet.</p>
+            <a href="/posts/" class="btn btn--primary">Browse posts</a>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- --------------------------------------------------------
+           Bookmarks
+           -------------------------------------------------------- -->
+      <div class="dashboard__panel" data-panel="bookmarks" id="panel-bookmarks" hidden>
+
+        <header class="dashboard__panel-header">
+          <h1 class="dashboard__panel-title">Bookmarks</h1>
+          <p class="dashboard__panel-subtitle" id="bookmarks-count">&nbsp;</p>
+        </header>
+
+        <div class="post-grid" id="bookmarks-grid" hidden></div>
+
+        <div class="dashboard__skeleton post-grid" id="bookmarks-skeleton">
+          <!-- skeleton cards injected by JS -->
+        </div>
+
+        <div class="dashboard__empty" id="bookmarks-empty" hidden>
+          <p>You haven't bookmarked any posts yet.</p>
+          <a href="/posts/" class="btn btn--primary">Browse posts</a>
+        </div>
+
+        <nav class="pagination" id="bookmarks-pagination" hidden aria-label="Pagination"></nav>
+
+      </div>
+
+      <!-- --------------------------------------------------------
+           Likes
+           -------------------------------------------------------- -->
+      <div class="dashboard__panel" data-panel="likes" id="panel-likes" hidden>
+
+        <header class="dashboard__panel-header">
+          <h1 class="dashboard__panel-title">Liked posts</h1>
+          <p class="dashboard__panel-subtitle" id="likes-count">&nbsp;</p>
+        </header>
+
+        <div class="post-grid" id="likes-grid" hidden></div>
+
+        <div class="dashboard__skeleton post-grid" id="likes-skeleton">
+          <!-- skeleton cards injected by JS -->
+        </div>
+
+        <div class="dashboard__empty" id="likes-empty" hidden>
+          <p>You haven't liked any posts yet.</p>
+          <a href="/posts/" class="btn btn--primary">Browse posts</a>
+        </div>
+
+        <nav class="pagination" id="likes-pagination" hidden aria-label="Pagination"></nav>
+
+      </div>
+
+      <!-- --------------------------------------------------------
+           Notifications
+           -------------------------------------------------------- -->
+      <div class="dashboard__panel" data-panel="notifications" id="panel-notifications" hidden>
+
+        <header class="dashboard__panel-header dashboard__panel-header--row">
+          <div>
+            <h1 class="dashboard__panel-title">Notifications</h1>
+            <p class="dashboard__panel-subtitle" id="notifications-count">&nbsp;</p>
+          </div>
+          <button
+            type="button"
+            class="btn btn--ghost"
+            id="notifications-read-all"
+          >
+            Mark all as read
+          </button>
+        </header>
+
+        <div class="notifications-list" id="notifications-list" hidden></div>
+
+        <div class="dashboard__skeleton" id="notifications-skeleton">
+          <div class="sk-line sk-line--md"></div>
+          <div class="sk-line sk-line--lg" style="margin-top:.75rem;"></div>
+          <div class="sk-line sk-line--md" style="margin-top:.75rem;"></div>
+          <div class="sk-line sk-line--lg" style="margin-top:.75rem;"></div>
+        </div>
+
+        <div class="dashboard__empty" id="notifications-empty" hidden>
+          <p>You have no notifications.</p>
+          <a href="/posts/" class="btn btn--primary">Browse posts</a>
+        </div>
+
+        <nav class="pagination" id="notifications-pagination" hidden aria-label="Pagination"></nav>
+
+      </div>
+
+      <!-- --------------------------------------------------------
+           Profile
+           -------------------------------------------------------- -->
+      <div class="dashboard__panel" data-panel="profile" id="panel-profile" hidden>
+
+        <header class="dashboard__panel-header">
+          <h1 class="dashboard__panel-title">Profile</h1>
+          <p class="dashboard__panel-subtitle">
+            Update your public information and account settings.
+          </p>
+        </header>
+
+        <!-- --------------------------------------------------------
+             Avatar
+             -------------------------------------------------------- -->
+        <section class="dash-card">
+          <header class="dash-card__header">
+            <h2 class="dash-card__title">Avatar</h2>
+            <p class="dash-card__description">
+              Shown next to your name on posts and comments.
+            </p>
+          </header>
+
+          <form id="avatar-form" class="avatar-form">
+            <div class="avatar-form__preview">
+              <img
+                class="avatar-preview"
+                id="profile-avatar-preview"
+                src=""
+                alt=""
+              >
+            </div>
+
+            <div class="avatar-form__body">
+              <div class="avatar-form__actions">
+                <label for="profile-avatar-input" class="btn btn--ghost">
+                  Choose new image
+                </label>
+                <input
+                  type="file"
+                  id="profile-avatar-input"
+                  accept="image/jpeg,image/png,image/webp"
+                  hidden
+                >
+                <button
+                  type="submit"
+                  class="btn btn--primary"
+                  id="profile-avatar-submit"
+                  disabled
+                >
+                  Upload
+                </button>
+              </div>
+              <p class="dash-hint">
+                JPG, PNG, or WebP. Max 2 MB. Square images look best.
+              </p>
+            </div>
+          </form>
+        </section>
+
+        <!-- --------------------------------------------------------
+             Account details
+             -------------------------------------------------------- -->
+        <section class="dash-card">
+          <header class="dash-card__header">
+            <h2 class="dash-card__title">Account details</h2>
+            <p class="dash-card__description">
+              This information appears on your public author page.
+            </p>
+          </header>
+
+          <form id="profile-form" class="dash-form" novalidate>
+
+            <div class="dash-form__grid">
+              <div class="dash-field">
+                <label class="dash-label" for="profile-first-name">
+                  First name
+                </label>
+                <input
+                  type="text"
+                  id="profile-first-name"
+                  name="first_name"
+                  class="dash-input"
+                  autocomplete="given-name"
+                  maxlength="150"
+                >
+              </div>
+
+              <div class="dash-field">
+                <label class="dash-label" for="profile-last-name">
+                  Last name
+                </label>
+                <input
+                  type="text"
+                  id="profile-last-name"
+                  name="last_name"
+                  class="dash-input"
+                  autocomplete="family-name"
+                  maxlength="150"
+                >
+              </div>
+            </div>
+
+            <div class="dash-field">
+              <label class="dash-label" for="profile-email">
+                Email
+              </label>
+              <input
+                type="email"
+                id="profile-email"
+                name="email"
+                class="dash-input"
+                autocomplete="email"
+                spellcheck="false"
+              >
+              <span class="dash-hint">
+                Used for password resets and account notifications.
+              </span>
+              <span class="dash-error" id="profile-email-error"></span>
+            </div>
+
+            <div class="dash-field">
+              <label class="dash-label" for="profile-bio">
+                Bio
+              </label>
+              <textarea
+                id="profile-bio"
+                name="bio"
+                class="dash-input dash-input--textarea"
+                rows="4"
+                maxlength="500"
+                placeholder="A short introduction for your author page."
+              ></textarea>
+              <span class="dash-hint">
+                <span id="profile-bio-count">0</span> / 500 characters
+              </span>
+            </div>
+
+            <div class="dash-field">
+              <label class="dash-label" for="profile-website">
+                Website
+              </label>
+              <input
+                type="url"
+                id="profile-website"
+                name="website"
+                class="dash-input"
+                placeholder="https://example.com"
+                autocomplete="url"
+              >
+              <span class="dash-hint">
+                Optional. Must start with http:// or https://
+              </span>
+              <span class="dash-error" id="profile-website-error"></span>
+            </div>
+
+            <div class="auth-error" id="profile-error" hidden></div>
+
+            <div class="dash-form__actions">
+              <button
+                type="submit"
+                class="btn btn--primary"
+                id="profile-submit"
+              >
+                Save changes
+              </button>
+              <span class="dash-saved" id="profile-saved" hidden>
+                Saved.
+              </span>
+            </div>
+
+          </form>
+        </section>
+
+        <!-- --------------------------------------------------------
+             Password
+             -------------------------------------------------------- -->
+        <section class="dash-card">
+          <header class="dash-card__header">
+            <h2 class="dash-card__title">Password</h2>
+            <p class="dash-card__description">
+              Change your account password. You'll stay logged in
+              on this device.
+            </p>
+          </header>
+
+          <form id="password-form" class="dash-form" novalidate>
+
+            <div class="dash-field">
+              <label class="dash-label" for="password-current">
+                Current password
+              </label>
+              <div class="dash-input-wrap">
+                <input
+                  type="password"
+                  id="password-current"
+                  name="old_password"
+                  class="dash-input"
+                  autocomplete="current-password"
+                  required
+                >
+                <button
+                  type="button"
+                  class="dash-input-toggle"
+                  data-toggle-target="password-current"
+                  aria-label="Show password"
+                  aria-pressed="false"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+                       aria-hidden="true">
+                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+              </div>
+              <span class="dash-error" id="password-current-error"></span>
+            </div>
+
+            <div class="dash-form__grid">
+              <div class="dash-field">
+                <label class="dash-label" for="password-new">
+                  New password
+                </label>
+                <div class="dash-input-wrap">
+                  <input
+                    type="password"
+                    id="password-new"
+                    name="new_password"
+                    class="dash-input"
+                    autocomplete="new-password"
+                    minlength="8"
+                    required
+                  >
+                  <button
+                    type="button"
+                    class="dash-input-toggle"
+                    data-toggle-target="password-new"
+                    aria-label="Show password"
+                    aria-pressed="false"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+                         aria-hidden="true">
+                      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </button>
+                </div>
+                <span class="dash-hint">At least 8 characters.</span>
+                <span class="dash-error" id="password-new-error"></span>
+              </div>
+
+              <div class="dash-field">
+                <label class="dash-label" for="password-confirm">
+                  Confirm new password
+                </label>
+                <div class="dash-input-wrap">
+                  <input
+                    type="password"
+                    id="password-confirm"
+                    name="new_password_confirm"
+                    class="dash-input"
+                    autocomplete="new-password"
+                    minlength="8"
+                    required
+                  >
+                  <button
+                    type="button"
+                    class="dash-input-toggle"
+                    data-toggle-target="password-confirm"
+                    aria-label="Show password"
+                    aria-pressed="false"
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                         stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+                         aria-hidden="true">
+                      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </button>
+                </div>
+                <span class="dash-error" id="password-confirm-error"></span>
+              </div>
+            </div>
+
+            <div class="auth-error" id="password-form-error" hidden></div>
+
+            <div class="dash-form__actions">
+              <button
+                type="submit"
+                class="btn btn--primary"
+                id="password-submit"
+              >
+                Change password
+              </button>
+            </div>
+
+          </form>
+        </section>
+
+      </div>
+
+    </section>
+
+  </div>
+
+</main>
+{% endblock %}
+
+{% block script %}
+  <script src="{% static 'js/api.js' %}"></script>
+  <script src="{% static 'js/blog/posts.js' %}"></script>
+  <script src="{% static 'js/blog/search.js' %}"></script>
+  <script src="{% static 'js/topbar.js' %}"></script>
+  <script src="{% static 'js/blog/dashboard.js' %}"></script>
+{% endblock %}

@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.db import models
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.text import slugify
 from django_ckeditor_5.fields import CKEditor5Field
@@ -342,6 +343,9 @@ class Post(models.Model):
     @property
     def is_published(self):
         return self.status == self.Status.PUBLISHED and not self.is_deleted
+
+    def get_absolute_url(self):
+        return reverse("post-detail-page", args=[self.slug])
 
 
 class PostView(models.Model):

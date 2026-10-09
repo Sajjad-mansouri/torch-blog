@@ -68,14 +68,11 @@
             role="menu"
             hidden
           >
-            <!-- Left panel: parents -->
             <div
               class="topbar__dropdown-panel topbar__dropdown-panel--parents"
               id="nav-categories-parents"
             ></div>
 
-            <!-- Right panel: children of the active parent.
-                 Hidden until a parent is hovered/focused. -->
             <div
               class="topbar__dropdown-panel topbar__dropdown-panel--children"
               id="nav-categories-children"
@@ -145,6 +142,33 @@
         class="topbar__menu-list"
         hidden
       ></div>
+    </div>
+
+    <!-- The following items are only shown when the user is logged in.
+         topbar.js unhides the group and fills the label. -->
+    <div class="topbar__menu-group topbar__menu-group--user" id="mobile-user-group" hidden>
+      <div class="topbar__menu-user" id="mobile-user-display">
+        <img class="topbar__menu-user-avatar" id="mobile-user-avatar" src="" alt="">
+        <div class="topbar__menu-user-meta">
+          <span class="topbar__menu-user-name" id="mobile-user-name"></span>
+          <span class="topbar__menu-user-role" id="mobile-user-role"></span>
+        </div>
+      </div>
+
+      <a href="/dashboard/">Dashboard</a>
+      <a href="/dashboard/?tab=bookmarks">My bookmarks</a>
+      <a href="/dashboard/?tab=notifications">
+        Notifications
+        <span class="topbar__menu-badge" id="mobile-user-badge" hidden></span>
+      </a>
+      <a href="/dashboard/?tab=profile">Profile settings</a>
+      <button
+        type="button"
+        class="topbar__menu-logout"
+        id="mobile-user-logout"
+      >
+        Log out
+      </button>
     </div>
 
     <a href="/about/">About</a>

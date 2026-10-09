@@ -1476,3 +1476,168 @@ button, input, select, textarea { font: inherit; color: inherit; }
   background: var(--accent-soft);
   color: var(--accent-hover);
 }
+
+
+
+/* ============================================================
+   Topbar — user account menu
+   ============================================================ */
+
+.topbar__user-menu {
+  position: relative;
+}
+
+.topbar__user-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.6rem 0.35rem 0.35rem;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.topbar__user-btn:hover {
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+.topbar__user-btn[aria-expanded="true"] {
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+.topbar__user-btn .topbar__chevron {
+  width: 11px;
+  height: 11px;
+  opacity: 0.7;
+}
+
+.topbar__user-btn[aria-expanded="true"] .topbar__chevron {
+  transform: rotate(180deg);
+}
+
+.topbar__user-name {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .topbar__user-name { display: none; }
+}
+
+/* Panel */
+.topbar__user-panel {
+  position: absolute;
+  top: calc(100% + 0.6rem);
+  right: 0;
+  min-width: 240px;
+  max-width: 280px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow:
+    0 1px 2px rgba(20, 20, 15, 0.04),
+    0 12px 28px rgba(20, 20, 15, 0.12);
+  padding: 0.35rem;
+  z-index: 40;
+  animation: dropdown-in 0.14s ease-out;
+}
+
+@keyframes dropdown-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.topbar__user-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.topbar__user-item:hover,
+.topbar__user-item:focus-visible {
+  background: var(--surface-soft);
+  color: var(--text);
+  outline: none;
+}
+
+.topbar__user-item--danger {
+  color: #b91c1c;
+}
+
+.topbar__user-item--danger:hover,
+.topbar__user-item--danger:focus-visible {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.topbar__user-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0.35rem 0;
+}
+
+.topbar__user-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 0.35rem;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   Mobile menu — user group
+   ============================================================ */
+
+.topbar__menu-group--user {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
+}
+
+.topbar__menu-user {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar__menu-user-avatar {
+  width: 36px;
+  height: 36px;
