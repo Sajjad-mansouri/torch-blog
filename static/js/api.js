@@ -2,9 +2,9 @@
 
 const API_BASE = '/api/v1';
 
-// ------------------------------------------------------------
+// ============================================================
 // Token storage
-// ------------------------------------------------------------
+// ============================================================
 
 function getAccessToken() {
   return localStorage.getItem('access_token');
@@ -25,9 +25,34 @@ function clearTokens() {
   localStorage.removeItem('user');
 }
 
-// ------------------------------------------------------------
-// Refresh (used only when a token exists and gets a 401)
-// ------------------------------------------------------------
+// ============================================================
+// Path helpers
+// ============================================================
+
+/**
+ * Return the segments of the current path, without empty strings.
+ *   "/posts/my-post/"  →  ["posts", "my-post"]
+ *   "/author/alice/"   →  ["author", "alice"]
+ *   "/"                →  []
+ */
+function getPathParts() {
+  return window.location.pathname.split('/').filter(Boolean);
+}
+
+/**
+ * Return a path segment by index, URL-decoded.
+ *   getPathSegment(0) on "/posts/my-post/" → "posts"
+ *   getPathSegment(1) on "/posts/my-post/" → "my-post"
+ * Returns null if the index is out of range.
+ */
+function getPathSegment(index) {
+  const parts = getPathParts();
+  return parts[index] ? decodeURIComponent(parts[index]) : null;
+}
+
+// ============================================================
+// Refresh
+// ============================================================
 
 async function refreshAccessToken() {
   const refresh = getRefreshToken();
@@ -48,9 +73,9 @@ async function refreshAccessToken() {
   }
 }
 
-// ------------------------------------------------------------
+// ============================================================
 // Fetch
-// ------------------------------------------------------------
+// ============================================================
 
 /**
  * Fetch JSON from the API.
@@ -75,7 +100,6 @@ async function apiFetch(path, options = {}) {
 
   let res = await fetch(url, { ...options, headers });
 
-  // Retry once after refreshing, only if we had a token to begin with
   if (res.status === 401 && token && getRefreshToken()) {
     const refreshed = await refreshAccessToken();
     if (refreshed) {
@@ -83,7 +107,6 @@ async function apiFetch(path, options = {}) {
       res = await fetch(url, { ...options, headers });
     } else {
       clearTokens();
-      // Do NOT redirect. Let the caller handle it.
     }
   }
 
@@ -102,4 +125,21 @@ async function apiFetch(path, options = {}) {
 
   if (res.status === 204) return null;
   return res.json();
+}
+
+// ============================================================
+// Auth helper — is the current visitor logged in?
+// ============================================================
+
+function isAuthenticated() {
+  return !!getAccessToken();
+}
+
+/**
+ * Redirect to login, preserving the current path via ?next=
+ * so the login page can send the user back after success.
+ */
+function redirectToLogin() {
+  const next = encodeURIComponent(window.location.pathname + window.location.search);
+  window.location.href = `/login/?next=${next}`;
 }

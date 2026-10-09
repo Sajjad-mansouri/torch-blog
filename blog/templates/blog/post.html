@@ -1,0 +1,186 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Post — Torch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/blog/posts.css' %}">
+  <link rel="stylesheet" href="{% static 'css/blog/post.css' %}">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar__inner">
+    <a href="/" class="brand" aria-label="Torch home">
+      <span class="brand__mark">T</span>
+      <span class="brand__name">Torch</span>
+    </a>
+    <nav class="topbar__nav" aria-label="Primary">
+      <a href="/">Home</a>
+      <a href="/posts.html">Posts</a>
+      <a href="/about.html">About</a>
+    </nav>
+    <div class="topbar__auth" id="topbar-auth"></div>
+  </div>
+</header>
+
+<main class="page page--narrow">
+
+  <!-- ============================================================
+       Loading skeleton
+       ============================================================ -->
+  <div id="post-skeleton" class="post-skeleton" hidden>
+    <div class="sk-line sk-line--sm"></div>
+    <div class="sk-line sk-line--xl"></div>
+    <div class="sk-line sk-line--lg"></div>
+    <div class="sk-media"></div>
+    <div class="sk-line sk-line--lg"></div>
+    <div class="sk-line sk-line--lg"></div>
+    <div class="sk-line sk-line--md"></div>
+  </div>
+
+  <!-- ============================================================
+       Error state
+       ============================================================ -->
+  <div id="post-error" class="state state--error" hidden>
+    <p class="state__title" id="post-error-title">Couldn't load this post</p>
+    <p class="state__hint" id="post-error-message"></p>
+    <a href="/posts.html" class="btn btn--primary">Back to posts</a>
+  </div>
+
+  <!-- ============================================================
+       Article
+       ============================================================ -->
+  <article id="post-article" class="post" hidden>
+
+    <!-- Header -->
+    <header class="post__header">
+      <div class="post__meta-top">
+        <a id="post-category" class="post__category" href="#" hidden></a>
+      </div>
+      <h1 class="post__title" id="post-title"></h1>
+      <p class="post__summary" id="post-summary"></p>
+
+      <div class="post__byline">
+        <a id="post-author-link" class="post__author" href="#">
+          <img id="post-author-avatar" class="post__author-avatar" src="" alt="">
+          <span class="post__author-meta">
+            <span class="post__author-name" id="post-author-name"></span>
+            <span class="post__author-sub" id="post-author-sub"></span>
+          </span>
+        </a>
+        <div class="post__byline-stats">
+          <time id="post-published"></time>
+          <span class="post__dot">·</span>
+          <span id="post-reading"></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Featured image -->
+    <figure class="post__hero" id="post-hero" hidden>
+      <img id="post-hero-image" src="" alt="">
+    </figure>
+
+    <!-- Toolbar: likes, bookmarks, share, views -->
+    <div class="post__toolbar">
+      <div class="post__toolbar-left">
+        <button type="button" class="tool-btn" id="btn-like" aria-pressed="false">
+          <span class="tool-btn__icon" id="icon-like"></span>
+          <span class="tool-btn__label" id="label-like">Like</span>
+          <span class="tool-btn__count" id="count-like">0</span>
+        </button>
+        <button type="button" class="tool-btn" id="btn-bookmark" aria-pressed="false">
+          <span class="tool-btn__icon" id="icon-bookmark"></span>
+          <span class="tool-btn__label" id="label-bookmark">Bookmark</span>
+          <span class="tool-btn__count" id="count-bookmark">0</span>
+        </button>
+        <button type="button" class="tool-btn" id="btn-share">
+          <span class="tool-btn__icon" id="icon-share"></span>
+          <span class="tool-btn__label">Share</span>
+        </button>
+      </div>
+      <div class="post__toolbar-right">
+        <span class="post__stat" id="post-views"></span>
+        <span class="post__stat" id="post-comments-count"></span>
+      </div>
+    </div>
+
+    <!-- Body (sanitized HTML from server) -->
+    <div class="post__body" id="post-body"></div>
+
+    <!-- Tags -->
+    <div class="post__tags" id="post-tags" hidden></div>
+
+    <!-- Author bio card -->
+    <aside class="author-card" id="author-card" hidden>
+      <img class="author-card__avatar" id="author-card-avatar" src="" alt="">
+      <div class="author-card__body">
+        <a class="author-card__name" id="author-card-name" href="#"></a>
+        <p class="author-card__bio" id="author-card-bio"></p>
+        <div class="author-card__links" id="author-card-links"></div>
+      </div>
+    </aside>
+
+  </article>
+
+  <!-- ============================================================
+       Comments
+       ============================================================ -->
+  <section class="comments" id="comments-section" hidden>
+    <header class="comments__header">
+      <h2 class="comments__title">Comments</h2>
+      <span class="comments__count" id="comments-total"></span>
+    </header>
+
+    <div class="comments__form-wrap" id="comment-form-wrap">
+      <!-- Anonymous prompt OR comment form, injected by JS -->
+    </div>
+
+    <div class="comments__list" id="comments-list"></div>
+
+    <div class="comments__empty" id="comments-empty" hidden>
+      <p>No comments yet. Be the first to share your thoughts.</p>
+    </div>
+
+    <div class="comments__more" id="comments-more" hidden>
+      <button type="button" class="btn btn--ghost" id="comments-load-more">
+        Load more comments
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       Similar posts
+       ============================================================ -->
+  <section class="related" id="related-section" hidden>
+    <h2 class="related__title">Related posts</h2>
+    <div class="related__grid" id="related-grid"></div>
+  </section>
+
+  <!-- ============================================================
+       More from author
+       ============================================================ -->
+  <section class="related" id="author-posts-section" hidden>
+    <h2 class="related__title" id="author-posts-title">More from this author</h2>
+    <div class="related__grid" id="author-posts-grid"></div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <span>&copy; <span id="footer-year"></span> Torch</span>
+    <span>Built with Django</span>
+  </div>
+</footer>
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/blog/posts.js' %}" data-mode="helpers"></script>
+<script src="{% static 'js/blog/post.js' %}"></script>
+</body>
+</html>

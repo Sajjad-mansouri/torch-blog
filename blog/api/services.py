@@ -100,7 +100,7 @@ def get_similar_posts(post, limit=4):
     if len(results) < limit and post.category_id:
         exclude_ids = [post.pk] + [p.pk for p in results]
         fallback = (
-            Post.published()
+            Post.objects.published()
             .filter(category_id=post.category_id)
             .exclude(pk__in=exclude_ids)
             .order_by("-published_at")[: limit - len(results)]
