@@ -30,6 +30,8 @@ simple_pages = {
     "": "landing",  # /              → landing
     "home": "home",  # /home/         → home
     "posts": "posts",  # /posts/        → post list
+    "categories": "categories",
+    "tags": "tags",
     "search": "search",
     "login": "login",  # /login/
     "register": "register",  # /register/

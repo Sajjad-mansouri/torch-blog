@@ -1,0 +1,92 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}Categories — Torch{% endblock %}
+
+{% block style %}
+  <link rel="stylesheet" href="{% static 'css/blog/posts.css' %}">
+  <link rel="stylesheet" href="{% static 'css/blog/taxonomy.css' %}">
+{% endblock %}
+
+{% block main %}
+<main class="page">
+
+  <header class="page__header">
+    <h1 class="page__title">Categories</h1>
+    <p class="page__subtitle" id="categories-count">&nbsp;</p>
+  </header>
+
+  <div id="categories-skeleton" class="taxonomy-grid">
+    <div class="skeleton-card" aria-hidden="true">
+      <div class="sk-media"></div>
+      <div class="sk-body">
+        <div class="sk-line sk-line--lg"></div>
+        <div class="sk-line sk-line--md"></div>
+        <div class="sk-line sk-line--sm"></div>
+      </div>
+    </div>
+    <div class="skeleton-card" aria-hidden="true">
+      <div class="sk-media"></div>
+      <div class="sk-body">
+        <div class="sk-line sk-line--lg"></div>
+        <div class="sk-line sk-line--md"></div>
+        <div class="sk-line sk-line--sm"></div>
+      </div>
+    </div>
+    <div class="skeleton-card" aria-hidden="true">
+      <div class="sk-media"></div>
+      <div class="sk-body">
+        <div class="sk-line sk-line--lg"></div>
+        <div class="sk-line sk-line--md"></div>
+        <div class="sk-line sk-line--sm"></div>
+      </div>
+    </div>
+    <div class="skeleton-card" aria-hidden="true">
+      <div class="sk-media"></div>
+      <div class="sk-body">
+        <div class="sk-line sk-line--lg"></div>
+        <div class="sk-line sk-line--md"></div>
+        <div class="sk-line sk-line--sm"></div>
+      </div>
+    </div>
+    <div class="skeleton-card" aria-hidden="true">
+      <div class="sk-media"></div>
+      <div class="sk-body">
+        <div class="sk-line sk-line--lg"></div>
+        <div class="sk-line sk-line--md"></div>
+        <div class="sk-line sk-line--sm"></div>
+      </div>
+    </div>
+    <div class="skeleton-card" aria-hidden="true">
+      <div class="sk-media"></div>
+      <div class="sk-body">
+        <div class="sk-line sk-line--lg"></div>
+        <div class="sk-line sk-line--md"></div>
+        <div class="sk-line sk-line--sm"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="categories-error" class="state state--error" hidden>
+    <p class="state__title">Couldn't load categories</p>
+    <p class="state__hint" id="categories-error-message"></p>
+    <a href="/posts/" class="btn btn--primary">Browse all posts</a>
+  </div>
+
+  <div id="categories-grid" class="taxonomy-grid" hidden></div>
+
+  <div id="categories-empty" class="state" hidden>
+    <p class="state__title">No categories yet</p>
+    <p class="state__hint">There are no categories to display.</p>
+  </div>
+
+</main>
+{% endblock %}
+
+{% block script %}
+  <script src="{% static 'js/api.js' %}"></script>
+  <script src="{% static 'js/blog/posts.js' %}"></script>
+  <script src="{% static 'js/blog/search.js' %}"></script>
+  <script src="{% static 'js/topbar.js' %}"></script>
+  <script src="{% static 'js/blog/categories-page.js' %}"></script>
+{% endblock %}

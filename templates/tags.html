@@ -1,0 +1,60 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}Tags — Torch{% endblock %}
+
+{% block style %}
+  <link rel="stylesheet" href="{% static 'css/blog/posts.css' %}">
+  <link rel="stylesheet" href="{% static 'css/blog/taxonomy.css' %}">
+{% endblock %}
+
+{% block main %}
+<main class="page">
+
+  <header class="page__header">
+    <h1 class="page__title">Tags</h1>
+    <p class="page__subtitle" id="tags-count">&nbsp;</p>
+  </header>
+
+  <div id="tags-skeleton" class="tag-cloud">
+    <span class="tag-chip-skeleton"></span>
+    <span class="tag-chip-skeleton"></span>
+    <span class="tag-chip-skeleton"></span>
+    <span class="tag-chip-skeleton"></span>
+    <span class="tag-chip-skeleton"></span>
+    <span class="tag-chip-skeleton"></span>
+    <span class="tag-chip-skeleton"></span>
+    <span class="tag-chip-skeleton"></span>
+    <span class="tag-chip-skeleton"></span>
+    <span class="tag-chip-skeleton"></span>
+    <span class="tag-chip-skeleton"></span>
+    <span class="tag-chip-skeleton"></span>
+    <span class="tag-chip-skeleton"></span>
+    <span class="tag-chip-skeleton"></span>
+    <span class="tag-chip-skeleton"></span>
+    <span class="tag-chip-skeleton"></span>
+  </div>
+
+  <div id="tags-error" class="state state--error" hidden>
+    <p class="state__title">Couldn't load tags</p>
+    <p class="state__hint" id="tags-error-message"></p>
+    <a href="/posts/" class="btn btn--primary">Browse all posts</a>
+  </div>
+
+  <div id="tags-cloud" class="tag-cloud" hidden></div>
+
+  <div id="tags-empty" class="state" hidden>
+    <p class="state__title">No tags yet</p>
+    <p class="state__hint">There are no tags to display.</p>
+  </div>
+
+</main>
+{% endblock %}
+
+{% block script %}
+  <script src="{% static 'js/api.js' %}"></script>
+  <script src="{% static 'js/blog/posts.js' %}"></script>
+  <script src="{% static 'js/blog/search.js' %}"></script>
+  <script src="{% static 'js/topbar.js' %}"></script>
+  <script src="{% static 'js/blog/tags-page.js' %}"></script>
+{% endblock %}
