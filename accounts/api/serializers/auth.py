@@ -257,14 +257,14 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         protocol = "https" if request and request.is_secure() else "http"
         uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
-        verify_url = (
-            f"{protocol}://{current_site.domain}{reverse('auth:password-reset-confirm')}"
+        reset_url = (
+            f"{protocol}://{current_site.domain}{reverse('password-reset-confirm')}"
             f"?uidb64={uidb64}&token={token}"
         )
         context = {
             "user": user,
             "email": user.email,
-            "verify_url": verify_url,
+            "reset_url": reset_url,
             "site_name": current_site.name,
         }
         text_template = "accounts/password_reset/password_reset_confirm_email.txt"

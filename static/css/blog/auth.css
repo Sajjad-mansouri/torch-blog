@@ -405,3 +405,38 @@
   color: var(--accent-hover);
   text-decoration: underline;
 }
+
+
+/* ------------------------------------------------------------
+   Loading text (used by the reset-confirm page while checking
+   the URL parameters)
+   ------------------------------------------------------------ */
+
+.auth-loading-text {
+  margin: 0;
+  padding: 2rem 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* ------------------------------------------------------------
+   Error icon (used by the invalid-link state)
+   ------------------------------------------------------------ */
+
+.auth-error-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1.25rem;
+  border-radius: 50%;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.auth-error-icon svg {
+  width: 32px;
+  height: 32px;
+}
