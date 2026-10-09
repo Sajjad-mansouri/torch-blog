@@ -745,7 +745,9 @@ class PostAuthorViewSet(
         """
         Soft delete. Only allowed for drafts, rejected, or archived.
         """
+        print("destroy")
         instance = self.get_object()
+        print("instance", instance)
         self.check_object_permissions(request, instance)
 
         if not instance.can_be_deleted_by(request.user):
@@ -795,21 +797,25 @@ class MePostViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     pagination_class = PostPagination
 
     def get_queryset(self):
-        """
-        Base queryset: posts owned by the current user (or all posts
-        if the user is an editor).
-        """
-        qs = Post.objects.select_related("author", "category").prefetch_related("tags")
+        base = Post.objects.select_related("author", "category").prefetch_related(
+            "tags"
+        )
 
         user = self.request.user
 
-        if self.action == "list" and user.is_editor:
-            # Editors can optionally see all posts via ?all=true
-            if self.request.query_params.get("all") == "true":
-                return qs
-            return qs.filter(author=user)
+        if not user.is_authenticated:
+            return base.none()
 
-        return qs.filter(author=user)
+        # Editors can see soft-deleted posts by default only if they ask
+        if user.is_editor:
+            if self.request.query_params.get("include_deleted") == "true":
+                return base
+            if self.request.query_params.get("all") == "true":
+                return base.filter(is_deleted=False)
+            return base.filter(author=user, is_deleted=False)
+
+        # Authors see only their own non-deleted posts
+        return base.filter(author=user, is_deleted=False)
 
     def get_queryset_with_counts(self, base):
         """

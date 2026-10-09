@@ -60,7 +60,6 @@
   }
 }
 
-/* User card */
 .dashboard__user {
   display: flex;
   align-items: center;
@@ -102,7 +101,6 @@
   text-transform: capitalize;
 }
 
-/* Tabs */
 .dashboard__tabs {
   display: flex;
   flex-direction: column;
@@ -168,7 +166,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Mobile — horizontal scroll strip */
 @media (max-width: 900px) {
   .dashboard__tabs {
     flex-direction: row;
@@ -185,10 +182,6 @@
     padding: 0.55rem 0.85rem;
     border-radius: 999px;
     white-space: nowrap;
-  }
-
-  .dashboard__tab span:not(.dashboard__tab-badge) {
-    /* keep label visible */
   }
 }
 
@@ -264,6 +257,16 @@
   border-color: var(--border-strong);
   box-shadow: var(--shadow);
   color: inherit;
+}
+
+.stat-card--static {
+  cursor: default;
+}
+
+.stat-card--static:hover {
+  transform: none;
+  border-color: var(--border);
+  box-shadow: none;
 }
 
 .stat-card__icon {
@@ -354,7 +357,7 @@
 }
 
 /* ------------------------------------------------------------
-   Loading skeleton for panel content
+   Loading skeleton
    ------------------------------------------------------------ */
 
 .dashboard__skeleton {
@@ -450,9 +453,9 @@
   opacity: 0;
 }
 
-/* ============================================================
-   Dashboard cards (used for profile sections)
-   ============================================================ */
+/* ------------------------------------------------------------
+   Dashboard cards (profile sections, analytics)
+   ------------------------------------------------------------ */
 
 .dash-card {
   background: var(--surface);
@@ -488,9 +491,9 @@
   line-height: 1.55;
 }
 
-/* ============================================================
+/* ------------------------------------------------------------
    Dashboard form
-   ============================================================ */
+   ------------------------------------------------------------ */
 
 .dash-form {
   display: flex;
@@ -534,7 +537,6 @@
   line-height: 1.4;
 }
 
-/* Inputs */
 .dash-input {
   width: 100%;
   padding: 0.7rem 0.9rem;
@@ -578,7 +580,12 @@
   line-height: 1.6;
 }
 
-/* Input wrap with password toggle */
+.dash-input[multiple] {
+  min-height: 96px;
+  padding: 0.35rem;
+  line-height: 1.5;
+}
+
 .dash-input-wrap {
   position: relative;
   display: flex;
@@ -620,15 +627,13 @@
   color: var(--accent);
 }
 
-/* Form actions */
 .dash-form__actions {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding-top: 0.5rem;
+  padding-top: 1.25rem;
   border-top: 1px solid var(--border);
   margin-top: 0.25rem;
-  padding-top: 1.25rem;
 }
 
 .dash-saved {
@@ -637,9 +642,9 @@
   font-weight: 500;
 }
 
-/* ============================================================
+/* ------------------------------------------------------------
    Avatar form
-   ============================================================ */
+   ------------------------------------------------------------ */
 
 .avatar-form {
   display: flex;
@@ -683,9 +688,414 @@
 }
 
 /* ------------------------------------------------------------
-   Section divider (reused from auth.css)
+   Auth error block (reused from auth.css)
    ------------------------------------------------------------ */
 
-.dashboard__panel .auth-error {
-  /* already defined in auth.css; this keeps the class shared */
+.auth-error {
+  padding: 0.7rem 0.9rem;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+/* ------------------------------------------------------------
+   Status filter (My Posts)
+   ------------------------------------------------------------ */
+
+.status-filter {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1.5rem;
+  padding: 0.35rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.status-filter::-webkit-scrollbar { display: none; }
+
+.status-filter__btn {
+  display: inline-block;
+  padding: 0.45rem 0.9rem;
+  border: none;
+  background: transparent;
+  color: var(--text-soft);
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.status-filter__btn:hover {
+  color: var(--text);
+  background: var(--surface-soft);
+}
+
+.status-filter__btn.is-active {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+}
+
+@media (max-width: 640px) {
+  .status-filter {
+    border-radius: var(--radius-sm);
+    padding: 0.25rem;
+  }
+  .status-filter__btn {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.82rem;
+  }
+}
+
+/* ------------------------------------------------------------
+   Posts table (My Posts)
+   ------------------------------------------------------------ */
+
+.posts-table-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.posts-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.posts-table thead th {
+  text-align: left;
+  padding: 0.85rem 1rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-soft);
+  white-space: nowrap;
+}
+
+.posts-table tbody td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  color: var(--text-soft);
+}
+
+.posts-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.posts-table tbody tr:hover td {
+  background: var(--surface-soft);
+}
+
+.posts-table__col-num,
+.posts-table__col-date {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.posts-table__col-actions {
+  width: 56px;
+  text-align: right;
+}
+
+.posts-table__title {
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  display: block;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.posts-table__title:hover {
+  color: var(--accent);
+}
+
+.posts-table__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.posts-table__status--draft {
+  background: #f4f4f0;
+  color: #4a4a45;
+}
+.posts-table__status--pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+.posts-table__status--changes_requested {
+  background: #ffedd5;
+  color: #9a3412;
+}
+.posts-table__status--approved {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.posts-table__status--scheduled {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+.posts-table__status--published {
+  background: #d1fae5;
+  color: #065f46;
+}
+.posts-table__status--rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+.posts-table__status--unpublished {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+.posts-table__status--archived {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+/* Reason button next to the status chip */
+.posts-table__reason-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 0.4rem;
+  border: none;
+  border-radius: 50%;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  vertical-align: middle;
+  transition: transform 0.1s;
+}
+
+.posts-table__reason-btn:hover {
+  transform: scale(1.1);
+}
+
+.posts-table__reason-btn--changes {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+/* ------------------------------------------------------------
+   Row actions menu
+   Position is applied by JS via position: fixed
+   ------------------------------------------------------------ */
+
+.posts-table__actions {
+  display: inline-block;
+}
+
+.posts-table__actions-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.posts-table__actions-btn:hover,
+.posts-table__actions-btn[aria-expanded="true"] {
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
+.posts-table__actions-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.posts-table__menu {
+  min-width: 200px;
+  max-width: 260px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow:
+    0 1px 2px rgba(20, 20, 15, 0.04),
+    0 12px 28px rgba(20, 20, 15, 0.12);
+  padding: 0.3rem;
+  animation: dashboard-menu-in 0.12s ease-out;
+}
+
+@keyframes dashboard-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.posts-table__menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.posts-table__menu-item:hover,
+.posts-table__menu-item:focus-visible {
+  background: var(--surface-soft);
+  color: var(--text);
+  outline: none;
+}
+
+.posts-table__menu-item svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
+.posts-table__menu-item--danger {
+  color: #b91c1c;
+}
+
+.posts-table__menu-item--danger:hover,
+.posts-table__menu-item--danger:focus-visible {
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+.posts-table__menu-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0.25rem 0;
+}
+
+/* ------------------------------------------------------------
+   Reason popover
+   Position is applied by JS via position: fixed
+   ------------------------------------------------------------ */
+
+.posts-table__reason-popover {
+  max-width: 320px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow:
+    0 1px 2px rgba(20, 20, 15, 0.04),
+    0 12px 28px rgba(20, 20, 15, 0.12);
+  padding: 0.9rem 1rem;
+  animation: dashboard-menu-in 0.12s ease-out;
+}
+
+.posts-table__reason-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.posts-table__reason-body {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-line;
+}
+
+/* ------------------------------------------------------------
+   Status grid (Analytics)
+   ------------------------------------------------------------ */
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.75rem;
+}
+
+.status-grid__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 1rem 0.5rem;
+  background: var(--surface-soft);
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.status-grid__count {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.status-grid__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ------------------------------------------------------------
+   Utility
+   ------------------------------------------------------------ */
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

@@ -11,13 +11,13 @@
 {% block main %}
 <main class="page page--dashboard">
 
-  <!-- Loading gate: until we know the user is authenticated -->
+  <!-- Loading gate -->
   <div id="dashboard-gate" class="dashboard-gate">
     <div class="auth-loading-spinner" aria-hidden="true"></div>
     <p class="dashboard-gate__text">Loading your dashboard…</p>
   </div>
 
-  <!-- Dashboard layout (revealed after auth check) -->
+  <!-- Dashboard layout -->
   <div id="dashboard-root" class="dashboard" hidden>
 
     <!-- ============================================================
@@ -39,6 +39,7 @@
       </div>
 
       <nav class="dashboard__tabs" id="dashboard-tabs" aria-label="Dashboard tabs">
+
         <button
           type="button"
           class="dashboard__tab is-active"
@@ -114,6 +115,45 @@
           </svg>
           <span>Profile</span>
         </button>
+
+        <!-- Writer-only tabs -->
+
+        <button
+          type="button"
+          class="dashboard__tab"
+          data-tab="posts"
+          data-role="author"
+          aria-selected="false"
+          hidden
+        >
+          <svg class="dashboard__tab-icon" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 3h7v7"/>
+            <path d="M10 14L21 3"/>
+            <path d="M21 14v7H3V3h7"/>
+          </svg>
+          <span>My Posts</span>
+        </button>
+
+        <button
+          type="button"
+          class="dashboard__tab"
+          data-tab="analytics"
+          data-role="author"
+          aria-selected="false"
+          hidden
+        >
+          <svg class="dashboard__tab-icon" viewBox="0 0 24 24"
+               fill="none" stroke="currentColor" stroke-width="1.7"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="20" x2="18" y2="10"/>
+            <line x1="12" y1="20" x2="12" y2="4"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          <span>Analytics</span>
+        </button>
+
       </nav>
 
     </aside>
@@ -199,9 +239,7 @@
 
         <div class="post-grid" id="bookmarks-grid" hidden></div>
 
-        <div class="dashboard__skeleton post-grid" id="bookmarks-skeleton">
-          <!-- skeleton cards injected by JS -->
-        </div>
+        <div class="dashboard__skeleton post-grid" id="bookmarks-skeleton"></div>
 
         <div class="dashboard__empty" id="bookmarks-empty" hidden>
           <p>You haven't bookmarked any posts yet.</p>
@@ -224,9 +262,7 @@
 
         <div class="post-grid" id="likes-grid" hidden></div>
 
-        <div class="dashboard__skeleton post-grid" id="likes-skeleton">
-          <!-- skeleton cards injected by JS -->
-        </div>
+        <div class="dashboard__skeleton post-grid" id="likes-skeleton"></div>
 
         <div class="dashboard__empty" id="likes-empty" hidden>
           <p>You haven't liked any posts yet.</p>
@@ -286,9 +322,7 @@
           </p>
         </header>
 
-        <!-- --------------------------------------------------------
-             Avatar
-             -------------------------------------------------------- -->
+        <!-- Avatar -->
         <section class="dash-card">
           <header class="dash-card__header">
             <h2 class="dash-card__title">Avatar</h2>
@@ -334,9 +368,7 @@
           </form>
         </section>
 
-        <!-- --------------------------------------------------------
-             Account details
-             -------------------------------------------------------- -->
+        <!-- Account details -->
         <section class="dash-card">
           <header class="dash-card__header">
             <h2 class="dash-card__title">Account details</h2>
@@ -448,9 +480,7 @@
           </form>
         </section>
 
-        <!-- --------------------------------------------------------
-             Password
-             -------------------------------------------------------- -->
+        <!-- Password -->
         <section class="dash-card">
           <header class="dash-card__header">
             <h2 class="dash-card__title">Password</h2>
@@ -574,6 +604,183 @@
 
           </form>
         </section>
+
+      </div>
+
+      <!-- --------------------------------------------------------
+           My Posts (writer only)
+           -------------------------------------------------------- -->
+      <div class="dashboard__panel" data-panel="posts" id="panel-posts" hidden>
+
+        <header class="dashboard__panel-header dashboard__panel-header--row">
+          <div>
+            <h1 class="dashboard__panel-title">My Posts</h1>
+            <p class="dashboard__panel-subtitle" id="posts-count">&nbsp;</p>
+          </div>
+          <a href="/dashboard/posts/new/" class="btn btn--primary">
+            <svg viewBox="0 0 24 24" width="16" height="16"
+                 fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            New Post
+          </a>
+        </header>
+
+        <nav class="status-filter" id="posts-status-filter" aria-label="Filter by status">
+          <button type="button" class="status-filter__btn is-active" data-status="">
+            All
+          </button>
+          <button type="button" class="status-filter__btn" data-status="draft">
+            Drafts
+          </button>
+          <button type="button" class="status-filter__btn" data-status="pending">
+            In review
+          </button>
+          <button type="button" class="status-filter__btn" data-status="changes_requested">
+            Needs changes
+          </button>
+          <button type="button" class="status-filter__btn" data-status="published">
+            Published
+          </button>
+          <button type="button" class="status-filter__btn" data-status="rejected">
+            Rejected
+          </button>
+        </nav>
+
+        <div class="posts-table-wrap" id="posts-table-wrap" hidden>
+          <table class="posts-table">
+            <thead>
+              <tr>
+                <th scope="col" class="posts-table__col-title">Title</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="posts-table__col-num">Views</th>
+                <th scope="col" class="posts-table__col-num">Likes</th>
+                <th scope="col" class="posts-table__col-num">Comments</th>
+                <th scope="col" class="posts-table__col-date">Updated</th>
+                <th scope="col" class="posts-table__col-actions">
+                  <span class="visually-hidden">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody id="posts-table-body"></tbody>
+          </table>
+        </div>
+
+        <div class="dashboard__skeleton" id="posts-skeleton">
+          <div class="sk-line sk-line--md"></div>
+          <div class="sk-line sk-line--lg" style="margin-top:.75rem;"></div>
+          <div class="sk-line sk-line--md" style="margin-top:.75rem;"></div>
+          <div class="sk-line sk-line--lg" style="margin-top:.75rem;"></div>
+        </div>
+
+        <div class="dashboard__empty" id="posts-empty" hidden>
+          <p>You haven't written any posts yet.</p>
+          <a href="/dashboard/posts/new/" class="btn btn--primary">
+            Write your first post
+          </a>
+        </div>
+
+        <nav class="pagination" id="posts-pagination" hidden aria-label="Pagination"></nav>
+
+      </div>
+
+      <!-- --------------------------------------------------------
+           Analytics (writer only)
+           -------------------------------------------------------- -->
+      <div class="dashboard__panel" data-panel="analytics" id="panel-analytics" hidden>
+
+        <header class="dashboard__panel-header">
+          <h1 class="dashboard__panel-title">Analytics</h1>
+          <p class="dashboard__panel-subtitle">
+            How your published posts are performing.
+          </p>
+        </header>
+
+        <div class="dashboard__stats" id="analytics-totals">
+          <div class="stat-card stat-card--static">
+            <span class="stat-card__value" id="analytics-posts">—</span>
+            <span class="stat-card__label">Published posts</span>
+          </div>
+          <div class="stat-card stat-card--static">
+            <span class="stat-card__value" id="analytics-views">—</span>
+            <span class="stat-card__label">Total views</span>
+          </div>
+          <div class="stat-card stat-card--static">
+            <span class="stat-card__value" id="analytics-likes">—</span>
+            <span class="stat-card__label">Total likes</span>
+          </div>
+          <div class="stat-card stat-card--static">
+            <span class="stat-card__value" id="analytics-comments">—</span>
+            <span class="stat-card__label">Total comments</span>
+          </div>
+          <div class="stat-card stat-card--static">
+            <span class="stat-card__value" id="analytics-bookmarks">—</span>
+            <span class="stat-card__label">Total bookmarks</span>
+          </div>
+        </div>
+
+        <section class="dash-card">
+          <header class="dash-card__header">
+            <h2 class="dash-card__title">Posts by status</h2>
+            <p class="dash-card__description">
+              A snapshot of everything you've written.
+            </p>
+          </header>
+          <div class="status-grid" id="analytics-by-status">
+            <div class="status-grid__item">
+              <span class="status-grid__count" id="by-status-draft">—</span>
+              <span class="status-grid__label">Drafts</span>
+            </div>
+            <div class="status-grid__item">
+              <span class="status-grid__count" id="by-status-pending">—</span>
+              <span class="status-grid__label">In review</span>
+            </div>
+            <div class="status-grid__item">
+              <span class="status-grid__count" id="by-status-changes_requested">—</span>
+              <span class="status-grid__label">Needs changes</span>
+            </div>
+            <div class="status-grid__item">
+              <span class="status-grid__count" id="by-status-published">—</span>
+              <span class="status-grid__label">Published</span>
+            </div>
+            <div class="status-grid__item">
+              <span class="status-grid__count" id="by-status-rejected">—</span>
+              <span class="status-grid__label">Rejected</span>
+            </div>
+            <div class="status-grid__item">
+              <span class="status-grid__count" id="by-status-unpublished">—</span>
+              <span class="status-grid__label">Unpublished</span>
+            </div>
+            <div class="status-grid__item">
+              <span class="status-grid__count" id="by-status-archived">—</span>
+              <span class="status-grid__label">Archived</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="dash-card">
+          <header class="dash-card__header">
+            <h2 class="dash-card__title">Top posts</h2>
+            <p class="dash-card__description">
+              Your five most-viewed published posts.
+            </p>
+          </header>
+          <div class="post-grid" id="analytics-top-posts"></div>
+          <div class="dashboard__empty" id="analytics-top-posts-empty" hidden>
+            <p>No published posts yet.</p>
+            <a href="/dashboard/posts/new/" class="btn btn--primary">
+              Write your first post
+            </a>
+          </div>
+        </section>
+
+        <div class="dashboard__skeleton" id="analytics-skeleton" hidden>
+          <div class="sk-line sk-line--md"></div>
+          <div class="sk-line sk-line--lg" style="margin-top:.75rem;"></div>
+          <div class="sk-line sk-line--md" style="margin-top:.75rem;"></div>
+        </div>
 
       </div>
 

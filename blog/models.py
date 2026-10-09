@@ -280,6 +280,32 @@ class Post(models.Model):
             self.Status.CHANGES_REQUESTED,
         ]
 
+    def can_be_edited_by(self, user):
+        """
+        Return True if `user` is allowed to edit this post.
+
+        Rules:
+        - Anonymous users: never.
+        - Editors: always.
+        - The author: only when the post is in an editable status
+          (draft, rejected, changes_requested).
+        - Any other author: never.
+        """
+        if not user or not user.is_authenticated:
+            return False
+
+        if user.is_editor:
+            return True
+
+        if user != self.author:
+            return False
+
+        return self.status in [
+            self.Status.DRAFT,
+            self.Status.REJECTED,
+            self.Status.CHANGES_REQUESTED,
+        ]
+
     def submit_for_review(self):
         self.status = self.Status.PENDING
         self.rejection_reason = ""
@@ -296,7 +322,7 @@ class Post(models.Model):
     def approve_and_publish(self, editor):
         self.status = self.Status.PUBLISHED
         self.reviewed_by = editor
-        self.reviewd_at = timezone.now()
+        self.reviewed_at = timezone.now()
         self.rejection_reason = ""
         self.changes_requested_note = ""
         if not self.published_at:

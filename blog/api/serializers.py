@@ -46,6 +46,8 @@ class PostCardSerializer(serializers.ModelSerializer):
     comment_count = serializers.IntegerField(read_only=True)
     bookmark_count = serializers.IntegerField(read_only=True)
 
+    allowed_actions = serializers.SerializerMethodField()
+
     class Meta:
         model = Post
         fields = [
@@ -62,7 +64,36 @@ class PostCardSerializer(serializers.ModelSerializer):
             "like_count",
             "comment_count",
             "bookmark_count",
+            "status",
+            "updated_at",
+            "allowed_actions",
         ]
+
+    def get_allowed_actions(self, obj):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+
+        if not user or not user.is_authenticated:
+            return {
+                "can_edit": False,
+                "can_delete": False,
+                "can_submit": False,
+                "can_preview": False,
+                "can_view_public": False,
+            }
+
+        # Preview: authors/editors on their own posts, in any status.
+        # A dedicated preview page shows the post as it would appear
+        # without exposing it publicly.
+        can_preview = user.is_editor or user == obj.author
+
+        return {
+            "can_edit": obj.can_be_edited_by(user),
+            "can_delete": obj.can_be_deleted_by(user),
+            "can_submit": obj.can_be_submitted_by(user),
+            "can_preview": can_preview,
+            "can_view_public": bool(obj.published_at) and not obj.is_deleted,
+        }
 
 
 # ============================================================
