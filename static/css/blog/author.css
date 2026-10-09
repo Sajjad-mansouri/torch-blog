@@ -1,0 +1,285 @@
+/* ============================================================
+   Author profile page
+   Extends posts.css tokens
+   ============================================================ */
+
+.page--author {
+  max-width: 960px;
+  padding-top: 1.5rem;
+  padding-bottom: 4rem;
+}
+
+@media (max-width: 640px) {
+  .page--author { padding-top: 1rem; padding-bottom: 3rem; }
+}
+
+/* ============================================================
+   Skeleton
+   ============================================================ */
+
+.author-skeleton {
+  padding: 1rem 0;
+}
+
+.author-skeleton__hero {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.sk-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: linear-gradient(
+    90deg,
+    var(--surface-soft) 0%,
+    #eeeee8 50%,
+    var(--surface-soft) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.3s infinite linear;
+}
+
+.author-skeleton .sk-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-top: 0.5rem;
+}
+
+.author-skeleton__stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+  margin-top: 1.75rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.sk-stat {
+  height: 40px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--surface-soft) 0%,
+    #eeeee8 50%,
+    var(--surface-soft) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.3s infinite linear;
+}
+
+@media (max-width: 640px) {
+  .author-skeleton__stats {
+    grid-template-columns: repeat(3, 1fr);
+    padding: 1rem;
+  }
+  .author-skeleton__hero {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .author-skeleton .sk-lines {
+    width: 100%;
+    align-items: center;
+  }
+}
+
+/* ============================================================
+   Author header
+   ============================================================ */
+
+.author-header {
+  padding: 0 0 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.author-header__main {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.author-header__avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--surface-soft);
+}
+
+.author-header__meta {
+  flex: 1;
+  min-width: 0;
+  padding-top: 0.25rem;
+}
+
+.author-header__name {
+  margin: 0 0 0.15rem;
+  font-family: var(--font-serif);
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--text);
+}
+
+.author-header__handle {
+  margin: 0 0 0.75rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.author-header__bio {
+  margin: 0 0 0.75rem;
+  color: var(--text-soft);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  white-space: pre-line;
+  max-width: 60ch;
+}
+
+.author-header__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 0.25rem;
+}
+
+.author-header__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--accent);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.author-header__link:hover { text-decoration: underline; }
+
+.author-header__link svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   Stats row
+   ============================================================ */
+
+.author-stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+  margin-top: 1.75rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.author-stats__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.15rem;
+}
+
+.author-stats__value {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.author-stats__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+@media (max-width: 640px) {
+  .author-stats {
+    grid-template-columns: repeat(3, 1fr);
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+  .author-stats__value { font-size: 1.2rem; }
+  .author-stats__label { font-size: 0.7rem; }
+}
+
+/* ============================================================
+   Sections
+   ============================================================ */
+
+.author-section {
+  margin-top: 3rem;
+}
+
+.author-section__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.author-section__title {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.author-section__count {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.author-section__more {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+@media (max-width: 640px) {
+  .author-header__main {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .author-header__meta {
+    text-align: center;
+    padding-top: 0;
+  }
+  .author-header__links {
+    justify-content: center;
+  }
+  .author-header__bio {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .author-header__avatar {
+    width: 80px;
+    height: 80px;
+  }
+}
