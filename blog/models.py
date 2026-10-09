@@ -340,21 +340,6 @@ class Post(models.Model):
         self.save(update_fields=["slug", "is_deleted", "deleted_by", "deleted_at"])
 
     @property
-    def like_count(self):
-        return self.likes.count()
-
-    @property
-    def comment_count(self):
-        return self.comments.filter(
-            status="approved",
-            is_deleted=False,
-        ).count()
-
-    @property
-    def bookmark_count(self):
-        return self.bookmarks.count()
-
-    @property
     def is_published(self):
         return self.status == self.Status.PUBLISHED and not self.is_deleted
 
