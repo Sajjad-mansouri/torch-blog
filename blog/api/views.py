@@ -1,6 +1,5 @@
 from django.core.cache import cache
 from django.db.models import Count, Prefetch, Q, Sum
-from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, mixins, status, viewsets
@@ -588,7 +587,7 @@ class SearchSuggestView(APIView):
     def get(self, request):
         raw_query = request.query_params.get("q", "")
         query = normalize_query(raw_query)
-
+        print(query)
         if query is None:
             return Response({"query": "", "results": []})
 
@@ -603,12 +602,13 @@ class SearchSuggestView(APIView):
                     "id": post.pk,
                     "label": post.title,
                     "slug": post.slug,
-                    "url": reverse("blog:post-detail", kwargs={"slug": post.slug}),
+                    "url": "",  # reverse("blog:post-detail", kwargs={"slug": post.slug}),
                 }
             )
 
         # Tags
         tags = search_tags(query, limit=self.PER_TYPE_LIMIT)
+        print(tags)
         for tag in tags:
             suggestions.append(
                 {

@@ -8,25 +8,80 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{%static 'css/blog/posts.css' %}">
+
+  <link rel="stylesheet" href="{% static 'css/blog/posts.css' %}">
+
 </head>
 <body>
 
 <header class="topbar">
   <div class="topbar__inner">
-    <a href="/" class="brand">
-      <span class="brand__mark">T</span>
-      <span class="brand__name">Torch</span>
-    </a>
-    <nav class="topbar__nav">
-      <a href="/">Home</a>
-      <a href="/posts.html" class="is-active">Posts</a>
-      <a href="/project.html">About</a>
-    </nav>
-    <div class="topbar__auth" id="topbar-auth">
-      <!-- Filled by JS. Shows "Login" when anonymous, avatar + menu when logged in. -->
+
+    <div class="topbar__left">
+      <button
+        type="button"
+        class="topbar__menu-btn"
+        id="topbar-menu-btn"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="topbar-menu"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round">
+          <line x1="4" y1="7" x2="20" y2="7"/>
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <line x1="4" y1="17" x2="20" y2="17"/>
+        </svg>
+      </button>
+
+      <a href="/" class="brand" aria-label="Torch home">
+        <span class="brand__mark">T</span>
+        <span class="brand__name">Torch</span>
+      </a>
+
+      <nav class="topbar__nav" aria-label="Primary">
+        <a href="/home/">Home</a>
+        <a href="/posts/" class="is-active">Posts</a>
+        <a href="/about/">About</a>
+      </nav>
     </div>
+
+    <div class="topbar__search" id="topbar-search">
+      <form class="search-form" id="search-form" role="search" autocomplete="off">
+        <div class="search-form__input-wrap">
+          <svg class="search-form__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"
+                  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+          <input
+            type="search"
+            id="search-input"
+            class="search-form__input"
+            placeholder="Search posts, tags, authors…"
+            aria-label="Search"
+            aria-autocomplete="list"
+            aria-controls="search-suggest"
+            aria-expanded="false"
+          >
+          <button type="button" class="search-form__clear" id="search-clear" hidden aria-label="Clear search">×</button>
+        </div>
+        <div class="search-suggest" id="search-suggest" hidden role="listbox"></div>
+      </form>
+    </div>
+
+    <div class="topbar__auth" id="topbar-auth"></div>
   </div>
+
+  <nav
+    class="topbar__menu"
+    id="topbar-menu"
+    aria-label="Mobile navigation"
+    hidden
+  >
+    <a href="/home/">Home</a>
+    <a href="/posts/" class="is-active">Posts</a>
+    <a href="/about/">About</a>
+  </nav>
 </header>
 
 <main class="page">
@@ -36,13 +91,35 @@
     <p class="page__subtitle" id="result-count">&nbsp;</p>
   </header>
 
+  <button
+    type="button"
+    class="filters-toggle"
+    id="filters-toggle"
+    aria-expanded="false"
+    aria-controls="filters-panel"
+  >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="1.7" stroke-linecap="round">
+      <line x1="4" y1="6" x2="20" y2="6"/>
+      <line x1="7" y1="12" x2="17" y2="12"/>
+      <line x1="10" y1="18" x2="14" y2="18"/>
+    </svg>
+    <span>Filters</span>
+    <span class="filters-toggle__chevron" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 12 15 18 9"/>
+      </svg>
+    </span>
+  </button>
+
   <div class="layout">
 
-    <!-- ============================================================
-         Sidebar
-         ============================================================ -->
-    <aside class="sidebar" aria-label="Filters">
-
+    <aside
+      class="sidebar"
+      id="filters-panel"
+      aria-label="Filters"
+    >
       <div class="filters">
 
         <div class="filters__group">
@@ -98,16 +175,11 @@
       </div>
     </aside>
 
-    <!-- ============================================================
-         Content
-         ============================================================ -->
     <section class="content" aria-live="polite">
 
       <div id="post-grid" class="post-grid"></div>
 
-      <div id="skeleton" class="post-grid" hidden>
-        <!-- Skeleton cards injected by JS -->
-      </div>
+      <div id="skeleton" class="post-grid" hidden></div>
 
       <div id="state-empty" class="state" hidden>
         <p class="state__title">No posts match your filters</p>
@@ -135,7 +207,11 @@
   </div>
 </footer>
 
-<script src="{%static 'js/api.js' %}"></script>
-<script src="{%static 'js/blog/posts.js' %}"></script>
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/blog/posts.js' %}"></script>
+<script src="{% static 'js/blog/search.js' %}"></script>
+<script src="{% static 'js/topbar.js' %}"></script>
+
 </body>
 </html>

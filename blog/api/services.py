@@ -64,10 +64,10 @@ def record_view(request, post, dedup_hours=1):
         user_agent=user_agent,
     )
     # Increment the denormalized counter on Post
-    Post.objects.filter(pk=post.pk).update(view_count=models.F("view_count") + 1)
+    Post.objects.filter(pk=post.pk).update(views_count=models.F("views_count") + 1)
 
     # Refresh the in-memory instance so the serializer sees the new count
-    post.refresh_from_db(fields=["view_count"])
+    post.refresh_from_db(fields=["views_count"])
     return True
 
 

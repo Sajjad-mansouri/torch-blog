@@ -1,0 +1,163 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search — Torch</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/blog/posts.css' %}">
+  <link rel="stylesheet" href="{% static 'css/blog/search.css' %}">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar__inner">
+
+    <div class="topbar__left">
+      <button
+        type="button"
+        class="topbar__menu-btn"
+        id="topbar-menu-btn"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="topbar-menu"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round">
+          <line x1="4" y1="7" x2="20" y2="7"/>
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <line x1="4" y1="17" x2="20" y2="17"/>
+        </svg>
+      </button>
+
+      <a href="/" class="brand" aria-label="Torch home">
+        <span class="brand__mark">T</span>
+        <span class="brand__name">Torch</span>
+      </a>
+
+      <nav class="topbar__nav" aria-label="Primary">
+        <a href="/home/">Home</a>
+        <a href="/posts/">Posts</a>
+        <a href="/about/">About</a>
+      </nav>
+    </div>
+
+    <div class="topbar__search" id="topbar-search">
+      <form class="search-form" id="search-form" role="search" autocomplete="off">
+        <div class="search-form__input-wrap">
+          <svg class="search-form__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"
+                  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+          <input
+            type="search"
+            id="search-input"
+            class="search-form__input"
+            placeholder="Search posts, tags, authors…"
+            aria-label="Search"
+            aria-autocomplete="list"
+            aria-controls="search-suggest"
+            aria-expanded="false"
+          >
+          <button type="button" class="search-form__clear" id="search-clear" hidden aria-label="Clear search">×</button>
+        </div>
+        <div class="search-suggest" id="search-suggest" hidden role="listbox"></div>
+      </form>
+    </div>
+
+    <div class="topbar__auth" id="topbar-auth"></div>
+  </div>
+
+  <nav
+    class="topbar__menu"
+    id="topbar-menu"
+    aria-label="Mobile navigation"
+    hidden
+  >
+    <a href="/home/">Home</a>
+    <a href="/posts/">Posts</a>
+    <a href="/about/">About</a>
+  </nav>
+</header>
+
+<main class="page page--search">
+
+  <header class="page__header">
+    <h1 class="page__title" id="search-title">Search</h1>
+    <p class="page__subtitle" id="search-subtitle"></p>
+  </header>
+
+  <nav class="search-tabs" id="search-tabs">
+    <a class="search-tab" data-type="all" href="#">All</a>
+    <a class="search-tab" data-type="post" href="#">Posts</a>
+    <a class="search-tab" data-type="author" href="#">Authors</a>
+    <a class="search-tab" data-type="tag" href="#">Tags</a>
+  </nav>
+
+  <div id="search-loading" class="state" hidden>
+    <p class="state__hint">Searching…</p>
+  </div>
+
+  <div id="search-empty" class="state" hidden>
+    <p class="state__title">No results</p>
+    <p class="state__hint" id="search-empty-hint">Try a different keyword.</p>
+  </div>
+
+  <div id="search-error" class="state state--error" hidden>
+    <p class="state__title">Something went wrong</p>
+    <p class="state__hint" id="search-error-message"></p>
+  </div>
+
+  <section id="search-mixed" hidden>
+    <div class="search-group" id="search-posts-group" hidden>
+      <header class="search-group__header">
+        <h2 class="search-group__title">Posts</h2>
+        <a class="search-group__more" id="search-posts-more" href="#">See all →</a>
+      </header>
+      <div class="post-grid" id="search-posts-grid"></div>
+    </div>
+
+    <div class="search-group" id="search-authors-group" hidden>
+      <header class="search-group__header">
+        <h2 class="search-group__title">Authors</h2>
+        <a class="search-group__more" id="search-authors-more" href="#">See all →</a>
+      </header>
+      <div class="author-list" id="search-authors-list"></div>
+    </div>
+
+    <div class="search-group" id="search-tags-group" hidden>
+      <header class="search-group__header">
+        <h2 class="search-group__title">Tags</h2>
+        <a class="search-group__more" id="search-tags-more" href="#">See all →</a>
+      </header>
+      <div class="tag-cloud" id="search-tags-cloud"></div>
+    </div>
+  </section>
+
+  <section id="search-typed" hidden>
+    <div class="post-grid" id="search-typed-posts"></div>
+    <div class="author-list" id="search-typed-authors"></div>
+    <div class="tag-cloud" id="search-typed-tags"></div>
+
+    <nav id="search-pagination" class="pagination" hidden></nav>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <span>&copy; <span id="footer-year"></span> Torch</span>
+    <span>Built with Django</span>
+  </div>
+</footer>
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/blog/posts.js' %}"></script>
+<script src="{% static 'js/blog/search.js' %}"></script>
+<script src="{% static 'js/topbar.js' %}"></script>
+<script src="{% static 'js/blog/search-page.js' %}"></script>
+</body>
+</html>

@@ -19,16 +19,31 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import TemplateView
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
 
+simple_pages = {
+    "": "landing",  # /              → landing
+    "home": "home",  # /home/         → home
+    "posts": "posts",  # /posts/        → post list
+    "search": "search",
+    "login": "login",  # /login/
+    "register": "register",  # /register/
+    "password-reset-request": "password-reset-request",
+    "password-reset-confirm": "password-reset-confirm",
+    "verify-email-confirm": "verify-email-confirm",
+    "dashboard": "dashboard",
+    "editor": "editor",
+    "notifications": "notifications",
+}
+
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("ckeditor5/", include("django_ckeditor_5.urls")),
-    path("", include("blog.urls")),
     path("api/v1/", include("core.api.urls")),
     path("api/v1/", include("blog.api.urls")),
     path("api/v1/", include("interactions.api.urls")),
@@ -47,7 +62,52 @@ urlpatterns = [
         SpectacularRedocView.as_view(url_name="schema"),
         name="redoc",
     ),
+    # --------------------------------------------------------
+    # Frontend — pages with path parameters
+    # --------------------------------------------------------
+    path(
+        "posts/<slug:slug>/",
+        TemplateView.as_view(template_name="post.html"),
+        name="post-detail-page",
+    ),
+    path(
+        "author/<str:username>/",
+        TemplateView.as_view(template_name="author.html"),
+        name="author-page",
+    ),
+    path(
+        "dashboard/posts/",
+        TemplateView.as_view(template_name="dashboard-posts.html"),
+        name="dashboard-posts",
+    ),
+    path(
+        "dashboard/posts/new/",
+        TemplateView.as_view(template_name="dashboard-post-edit.html"),
+        name="dashboard-post-new",
+    ),
+    path(
+        "dashboard/posts/<slug:slug>/edit/",
+        TemplateView.as_view(template_name="dashboard-post-edit.html"),
+        name="dashboard-post-edit",
+    ),
+    path(
+        "editor/review/",
+        TemplateView.as_view(template_name="editor-review.html"),
+        name="editor-review",
+    ),
 ]
+
+# ------------------------------------------------------------
+# Simple pages (no parameters)
+# ------------------------------------------------------------
+for url_path, template in simple_pages.items():
+    urlpatterns.append(
+        path(
+            f"{url_path}/" if url_path else "",
+            TemplateView.as_view(template_name=f"{template}.html"),
+            name=template,
+        )
+    )
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

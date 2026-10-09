@@ -15,24 +15,76 @@
 
 <header class="topbar">
   <div class="topbar__inner">
-    <a href="/" class="brand" aria-label="Torch home">
-      <span class="brand__mark">T</span>
-      <span class="brand__name">Torch</span>
-    </a>
-    <nav class="topbar__nav" aria-label="Primary">
-      <a href="/">Home</a>
-      <a href="/posts.html">Posts</a>
-      <a href="/about.html">About</a>
-    </nav>
+
+    <div class="topbar__left">
+      <button
+        type="button"
+        class="topbar__menu-btn"
+        id="topbar-menu-btn"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="topbar-menu"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round">
+          <line x1="4" y1="7" x2="20" y2="7"/>
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <line x1="4" y1="17" x2="20" y2="17"/>
+        </svg>
+      </button>
+
+      <a href="/" class="brand" aria-label="Torch home">
+        <span class="brand__mark">T</span>
+        <span class="brand__name">Torch</span>
+      </a>
+
+      <nav class="topbar__nav" aria-label="Primary">
+        <a href="/home/">Home</a>
+        <a href="/posts/">Posts</a>
+        <a href="/about/">About</a>
+      </nav>
+    </div>
+
+    <div class="topbar__search" id="topbar-search">
+      <form class="search-form" id="search-form" role="search" autocomplete="off">
+        <div class="search-form__input-wrap">
+          <svg class="search-form__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"
+                  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+          <input
+            type="search"
+            id="search-input"
+            class="search-form__input"
+            placeholder="Search posts, tags, authors…"
+            aria-label="Search"
+            aria-autocomplete="list"
+            aria-controls="search-suggest"
+            aria-expanded="false"
+          >
+          <button type="button" class="search-form__clear" id="search-clear" hidden aria-label="Clear search">×</button>
+        </div>
+        <div class="search-suggest" id="search-suggest" hidden role="listbox"></div>
+      </form>
+    </div>
+
     <div class="topbar__auth" id="topbar-auth"></div>
   </div>
+
+  <nav
+    class="topbar__menu"
+    id="topbar-menu"
+    aria-label="Mobile navigation"
+    hidden
+  >
+    <a href="/home/">Home</a>
+    <a href="/posts/">Posts</a>
+    <a href="/about/">About</a>
+  </nav>
 </header>
 
 <main class="page page--narrow">
 
-  <!-- ============================================================
-       Loading skeleton
-       ============================================================ -->
   <div id="post-skeleton" class="post-skeleton" hidden>
     <div class="sk-line sk-line--sm"></div>
     <div class="sk-line sk-line--xl"></div>
@@ -43,21 +95,14 @@
     <div class="sk-line sk-line--md"></div>
   </div>
 
-  <!-- ============================================================
-       Error state
-       ============================================================ -->
   <div id="post-error" class="state state--error" hidden>
     <p class="state__title" id="post-error-title">Couldn't load this post</p>
     <p class="state__hint" id="post-error-message"></p>
-    <a href="/posts.html" class="btn btn--primary">Back to posts</a>
+    <a href="/posts/" class="btn btn--primary">Back to posts</a>
   </div>
 
-  <!-- ============================================================
-       Article
-       ============================================================ -->
   <article id="post-article" class="post" hidden>
 
-    <!-- Header -->
     <header class="post__header">
       <div class="post__meta-top">
         <a id="post-category" class="post__category" href="#" hidden></a>
@@ -81,12 +126,10 @@
       </div>
     </header>
 
-    <!-- Featured image -->
     <figure class="post__hero" id="post-hero" hidden>
       <img id="post-hero-image" src="" alt="">
     </figure>
 
-    <!-- Toolbar: likes, bookmarks, share, views -->
     <div class="post__toolbar">
       <div class="post__toolbar-left">
         <button type="button" class="tool-btn" id="btn-like" aria-pressed="false">
@@ -110,13 +153,10 @@
       </div>
     </div>
 
-    <!-- Body (sanitized HTML from server) -->
     <div class="post__body" id="post-body"></div>
 
-    <!-- Tags -->
     <div class="post__tags" id="post-tags" hidden></div>
 
-    <!-- Author bio card -->
     <aside class="author-card" id="author-card" hidden>
       <img class="author-card__avatar" id="author-card-avatar" src="" alt="">
       <div class="author-card__body">
@@ -128,18 +168,13 @@
 
   </article>
 
-  <!-- ============================================================
-       Comments
-       ============================================================ -->
   <section class="comments" id="comments-section" hidden>
     <header class="comments__header">
       <h2 class="comments__title">Comments</h2>
       <span class="comments__count" id="comments-total"></span>
     </header>
 
-    <div class="comments__form-wrap" id="comment-form-wrap">
-      <!-- Anonymous prompt OR comment form, injected by JS -->
-    </div>
+    <div class="comments__form-wrap" id="comment-form-wrap"></div>
 
     <div class="comments__list" id="comments-list"></div>
 
@@ -154,17 +189,11 @@
     </div>
   </section>
 
-  <!-- ============================================================
-       Similar posts
-       ============================================================ -->
   <section class="related" id="related-section" hidden>
     <h2 class="related__title">Related posts</h2>
     <div class="related__grid" id="related-grid"></div>
   </section>
 
-  <!-- ============================================================
-       More from author
-       ============================================================ -->
   <section class="related" id="author-posts-section" hidden>
     <h2 class="related__title" id="author-posts-title">More from this author</h2>
     <div class="related__grid" id="author-posts-grid"></div>
@@ -179,8 +208,11 @@
   </div>
 </footer>
 
+
 <script src="{% static 'js/api.js' %}"></script>
-<script src="{% static 'js/blog/posts.js' %}" data-mode="helpers"></script>
+<script src="{% static 'js/blog/posts.js' %}"></script>
+<script src="{% static 'js/blog/search.js' %}"></script>
+<script src="{% static 'js/topbar.js' %}"></script>
 <script src="{% static 'js/blog/post.js' %}"></script>
 </body>
 </html>
