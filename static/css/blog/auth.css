@@ -440,3 +440,37 @@
   width: 32px;
   height: 32px;
 }
+
+
+/* ------------------------------------------------------------
+   Loading state with a spinner
+   Used by verify-email-confirm while it posts to the API
+   ------------------------------------------------------------ */
+
+.auth-loading-state {
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.auth-loading-spinner {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  margin: 0 auto 1.25rem;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: auth-spin 0.8s linear infinite;
+}
+
+@keyframes auth-spin {
+  to { transform: rotate(360deg); }
+}
+
+.auth-loading-state .auth-card__title {
+  margin-bottom: 0.5rem;
+}
+
+.auth-loading-state .auth-card__subtitle {
+  margin-bottom: 0;
+}

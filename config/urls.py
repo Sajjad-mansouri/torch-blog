@@ -38,6 +38,7 @@ simple_pages = {
     "password-reset-request": "password-reset-request",
     "password-reset-confirm": "password-reset-confirm",
     "verify-email-confirm": "verify-email-confirm",
+    "verify-email-resend": "verify-email-resend",
     "dashboard": "dashboard",
     "editor": "editor",
     "notifications": "notifications",

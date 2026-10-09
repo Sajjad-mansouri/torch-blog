@@ -477,7 +477,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         text_template = "accounts/register/email_verification.txt"
         html_template = "accounts/register/email_verification.html"
         verify_url = (
-            f"{protocol}://{current_site.domain}{reverse('auth:verify-email-confirm')}"
+            f"{protocol}://{current_site.domain}{reverse('verify-email-confirm')}"
             f"?uidb64={uidb64}&token={token}"
         )
 
@@ -621,7 +621,7 @@ class EmailVerificationResendSerializer(serializers.Serializer):
 
         # frontend_url = settings.FRONTEND_URL.rstrip("/")
         verify_url = (
-            f"{protocol}://{current_site.domain}{reverse('auth:verify-email-confirm')}"
+            f"{protocol}://{current_site.domain}{reverse('verify-email-confirm')}"
             f"?uidb64={uidb64}&token={token}"
         )
 

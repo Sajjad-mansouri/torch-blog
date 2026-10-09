@@ -1,0 +1,136 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verifying your email — Torch</title>
+
+  <!--
+    Strip uidb64 and token from the URL as soon as the page
+    loads. Placed before any external resource so the Referer
+    header never contains the token.
+  -->
+  <meta name="referrer" content="no-referrer">
+
+  <script>
+    (function () {
+      var params = new URLSearchParams(window.location.search);
+      if (params.has('token') || params.has('uidb64')) {
+        window.__verifyParams = {
+          uidb64: params.get('uidb64'),
+          token: params.get('token'),
+        };
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'css/blog/posts.css' %}">
+  <link rel="stylesheet" href="{% static 'css/blog/auth.css' %}">
+</head>
+<body class="auth-body">
+
+<main class="auth-page">
+
+  <a href="/" class="auth-brand" aria-label="Torch home">
+    <span class="brand__mark">T</span>
+    <span class="brand__name">Torch</span>
+  </a>
+
+  <div class="auth-card">
+
+    <!-- ============================================================
+         Loading state — auto-transitions to success or invalid
+         ============================================================ -->
+    <div id="verify-loading" class="auth-loading-state">
+
+      <div class="auth-loading-spinner" aria-hidden="true"></div>
+
+      <h1 class="auth-card__title">Verifying your email</h1>
+      <p class="auth-card__subtitle">
+        Just a moment while we confirm your address.
+      </p>
+
+    </div>
+
+    <!-- ============================================================
+         Success state
+         ============================================================ -->
+    <div id="verify-success" hidden>
+
+      <div class="auth-success">
+        <div class="auth-success__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+
+        <h1 class="auth-card__title">Email confirmed</h1>
+        <p class="auth-card__subtitle" id="verify-success-message">
+          Your email has been verified. You can now log in.
+        </p>
+
+        <div class="auth-success__actions">
+          <a href="/login/" class="auth-submit" id="verify-go-login">
+            Go to login
+          </a>
+        </div>
+
+        <p class="auth-success__note">
+          Thanks for joining {{ site_name|default:"Torch" }}.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- ============================================================
+         Invalid link state
+         ============================================================ -->
+    <div id="verify-invalid" hidden>
+
+      <div class="auth-error-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+
+      <h1 class="auth-card__title">Link invalid or expired</h1>
+      <p class="auth-card__subtitle" id="verify-invalid-message">
+        This verification link is no longer valid. It may have
+        expired, or it may have already been used.
+      </p>
+
+      <div class="auth-success__actions">
+        <a href="/verify-email-resend/" class="auth-submit">
+          Request a new link
+        </a>
+      </div>
+
+      <p class="auth-success__note">
+        Already verified?
+        <a href="/login/">Back to login</a>
+      </p>
+
+    </div>
+
+  </div>
+
+  <a href="/" class="auth-back">← Back to home</a>
+
+</main>
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/blog/verify-email-confirm.js' %}"></script>
+
+</body>
+</html>
