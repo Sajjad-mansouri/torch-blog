@@ -76,6 +76,16 @@ urlpatterns = [
         name="author-page",
     ),
     path(
+        "categories/<slug:slug>/",
+        TemplateView.as_view(template_name="category.html"),
+        name="category-page",
+    ),
+    path(
+        "tags/<slug:slug>/",
+        TemplateView.as_view(template_name="tag.html"),
+        name="tag-page",
+    ),
+    path(
         "dashboard/posts/",
         TemplateView.as_view(template_name="dashboard-posts.html"),
         name="dashboard-posts",

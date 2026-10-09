@@ -1,88 +1,17 @@
+{%extends '_base.html'%}
+
 {%load static%}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Post — Torch</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+{%block title%}
+Post — Torch
+{%endblock%}
+
+{%block style%}
   <link rel="stylesheet" href="{% static 'css/blog/posts.css' %}">
   <link rel="stylesheet" href="{% static 'css/blog/post.css' %}">
-</head>
-<body>
+{%endblock%}
 
-<header class="topbar">
-  <div class="topbar__inner">
-
-    <div class="topbar__left">
-      <button
-        type="button"
-        class="topbar__menu-btn"
-        id="topbar-menu-btn"
-        aria-label="Open menu"
-        aria-expanded="false"
-        aria-controls="topbar-menu"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2" stroke-linecap="round">
-          <line x1="4" y1="7" x2="20" y2="7"/>
-          <line x1="4" y1="12" x2="20" y2="12"/>
-          <line x1="4" y1="17" x2="20" y2="17"/>
-        </svg>
-      </button>
-
-      <a href="/" class="brand" aria-label="Torch home">
-        <span class="brand__mark">T</span>
-        <span class="brand__name">Torch</span>
-      </a>
-
-      <nav class="topbar__nav" aria-label="Primary">
-        <a href="/home/">Home</a>
-        <a href="/posts/">Posts</a>
-        <a href="/about/">About</a>
-      </nav>
-    </div>
-
-    <div class="topbar__search" id="topbar-search">
-      <form class="search-form" id="search-form" role="search" autocomplete="off">
-        <div class="search-form__input-wrap">
-          <svg class="search-form__icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"
-                  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-          </svg>
-          <input
-            type="search"
-            id="search-input"
-            class="search-form__input"
-            placeholder="Search posts, tags, authors…"
-            aria-label="Search"
-            aria-autocomplete="list"
-            aria-controls="search-suggest"
-            aria-expanded="false"
-          >
-          <button type="button" class="search-form__clear" id="search-clear" hidden aria-label="Clear search">×</button>
-        </div>
-        <div class="search-suggest" id="search-suggest" hidden role="listbox"></div>
-      </form>
-    </div>
-
-    <div class="topbar__auth" id="topbar-auth"></div>
-  </div>
-
-  <nav
-    class="topbar__menu"
-    id="topbar-menu"
-    aria-label="Mobile navigation"
-    hidden
-  >
-    <a href="/home/">Home</a>
-    <a href="/posts/">Posts</a>
-    <a href="/about/">About</a>
-  </nav>
-</header>
-
+{%block main%}
 <main class="page page--narrow">
 
   <div id="post-skeleton" class="post-skeleton" hidden>
@@ -200,19 +129,12 @@
   </section>
 
 </main>
+{%endblock%}
 
-<footer class="footer">
-  <div class="footer__inner">
-    <span>&copy; <span id="footer-year"></span> Torch</span>
-    <span>Built with Django</span>
-  </div>
-</footer>
-
-
+{%block script%}
 <script src="{% static 'js/api.js' %}"></script>
 <script src="{% static 'js/blog/posts.js' %}"></script>
 <script src="{% static 'js/blog/search.js' %}"></script>
 <script src="{% static 'js/topbar.js' %}"></script>
 <script src="{% static 'js/blog/post.js' %}"></script>
-</body>
-</html>
+{%endblock%}

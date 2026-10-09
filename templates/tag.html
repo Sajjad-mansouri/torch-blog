@@ -1,0 +1,86 @@
+{%extends '_base.html'%}
+
+{%load static%}
+
+{%block title%}
+Tag — Torch
+{%endblock%}
+
+{%block style%}
+  <link rel="stylesheet" href="{% static 'css/blog/posts.css' %}">
+  <link rel="stylesheet" href="{% static 'css/blog/taxonomy.css' %}">
+{%endblock%}
+
+{%block main%}
+<main class="page">
+
+  <div id="taxonomy-skeleton" class="taxonomy-skeleton">
+    <div class="sk-line sk-line--sm"></div>
+    <div class="sk-line sk-line--xl"></div>
+    <div class="sk-line sk-line--lg"></div>
+  </div>
+
+  <div id="taxonomy-error" class="state state--error" hidden>
+    <p class="state__title" id="taxonomy-error-title">Tag not found</p>
+    <p class="state__hint" id="taxonomy-error-message"></p>
+    <a href="/posts/" class="btn btn--primary">Browse all posts</a>
+  </div>
+
+  <header id="taxonomy-header" class="taxonomy-header" hidden>
+    <div class="taxonomy-header__main">
+      <div class="taxonomy-header__text">
+        <p class="taxonomy-header__eyebrow">Tag</p>
+        <h1 class="taxonomy-header__title" id="taxonomy-title"></h1>
+        <p class="taxonomy-header__meta" id="taxonomy-meta"></p>
+      </div>
+    </div>
+  </header>
+
+  <div class="taxonomy-controls" id="taxonomy-controls" hidden>
+    <div class="taxonomy-controls__search">
+      <div class="input-with-icon">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"
+                fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <input
+          type="search"
+          id="taxonomy-search"
+          placeholder="Search in this tag…"
+          autocomplete="off"
+        >
+      </div>
+    </div>
+    <div class="taxonomy-controls__ordering">
+      <label class="filters__label" for="taxonomy-ordering">Sort by</label>
+      <select id="taxonomy-ordering">
+        <option value="newest">Newest</option>
+        <option value="oldest">Oldest</option>
+        <option value="most_viewed">Most viewed</option>
+        <option value="most_liked">Most liked</option>
+        <option value="most_commented">Most commented</option>
+        <option value="title_asc">Title A–Z</option>
+        <option value="title_desc">Title Z–A</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="taxonomy-grid" class="post-grid" hidden></div>
+
+  <div id="taxonomy-empty" class="state" hidden>
+    <p class="state__title">No posts found</p>
+    <p class="state__hint">There are no posts with this tag yet.</p>
+  </div>
+
+  <nav id="taxonomy-pagination" class="pagination" hidden aria-label="Pagination"></nav>
+
+</main>
+{%endblock%}
+
+{%block script%}
+  <script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/blog/posts.js' %}"></script>
+<script src="{% static 'js/blog/search.js' %}"></script>
+<script src="{% static 'js/topbar.js' %}"></script>
+<script src="{% static 'js/blog/taxonomy.js' %}"></script>
+{%endblock%}

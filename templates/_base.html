@@ -1,0 +1,168 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{%block title%}{%endblock%}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+{%block style%}
+{%endblock%}
+
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar__inner">
+
+    <div class="topbar__left">
+      <button
+        type="button"
+        class="topbar__menu-btn"
+        id="topbar-menu-btn"
+        aria-label="Open menu"
+        aria-expanded="false"
+        aria-controls="topbar-menu"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round">
+          <line x1="4" y1="7" x2="20" y2="7"/>
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <line x1="4" y1="17" x2="20" y2="17"/>
+        </svg>
+      </button>
+
+      <a href="/" class="brand" aria-label="Torch home">
+        <span class="brand__mark">T</span>
+        <span class="brand__name">Torch</span>
+      </a>
+
+      <nav class="topbar__nav" aria-label="Primary">
+        <a href="/home/">Home</a>
+        <a href="/posts/">Posts</a>
+
+        <div class="topbar__dropdown" id="nav-categories">
+          <button
+            type="button"
+            class="topbar__nav-link topbar__dropdown-btn"
+            id="nav-categories-btn"
+            aria-haspopup="true"
+            aria-expanded="false"
+            aria-controls="nav-categories-menu"
+          >
+            Categories
+            <svg class="topbar__chevron" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" aria-hidden="true">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+
+          <div
+            class="topbar__dropdown-menu"
+            id="nav-categories-menu"
+            role="menu"
+            hidden
+          >
+            <!-- Left panel: parents -->
+            <div
+              class="topbar__dropdown-panel topbar__dropdown-panel--parents"
+              id="nav-categories-parents"
+            ></div>
+
+            <!-- Right panel: children of the active parent.
+                 Hidden until a parent is hovered/focused. -->
+            <div
+              class="topbar__dropdown-panel topbar__dropdown-panel--children"
+              id="nav-categories-children"
+              aria-hidden="true"
+            ></div>
+          </div>
+        </div>
+
+        <a href="/about/">About</a>
+      </nav>
+    </div>
+
+    <div class="topbar__search" id="topbar-search">
+      <form class="search-form" id="search-form" role="search" autocomplete="off">
+        <div class="search-form__input-wrap">
+          <svg class="search-form__icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z"
+                  fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+          <input
+            type="search"
+            id="search-input"
+            class="search-form__input"
+            placeholder="Search posts, tags, authors…"
+            aria-label="Search"
+            aria-autocomplete="list"
+            aria-controls="search-suggest"
+            aria-expanded="false"
+          >
+          <button type="button" class="search-form__clear" id="search-clear" hidden aria-label="Clear search">×</button>
+        </div>
+        <div class="search-suggest" id="search-suggest" hidden role="listbox"></div>
+      </form>
+    </div>
+
+    <div class="topbar__auth" id="topbar-auth"></div>
+  </div>
+
+  <nav
+    class="topbar__menu"
+    id="topbar-menu"
+    aria-label="Mobile navigation"
+    hidden
+  >
+    <a href="/home/">Home</a>
+    <a href="/posts/">Posts</a>
+
+    <div class="topbar__menu-group">
+      <button
+        type="button"
+        class="topbar__menu-group-btn"
+        id="mobile-categories-btn"
+        aria-expanded="false"
+        aria-controls="mobile-categories"
+      >
+        <span>Categories</span>
+        <svg class="topbar__chevron" viewBox="0 0 24 24"
+             fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round"
+             stroke-linejoin="round" aria-hidden="true">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+
+      <div
+        id="mobile-categories"
+        class="topbar__menu-list"
+        hidden
+      ></div>
+    </div>
+
+    <a href="/about/">About</a>
+  </nav>
+</header>
+
+{%block main%}
+{%endblock%}
+
+<footer class="footer">
+  <div class="footer__inner">
+    <span>&copy; <span id="footer-year"></span> Torch</span>
+    <span>Built with Django</span>
+  </div>
+</footer>
+
+{%block script%}
+{%endblock%}
+
+</body>
+</html>

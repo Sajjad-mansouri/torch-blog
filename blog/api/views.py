@@ -167,7 +167,7 @@ class PostListAPIView(PostOrderingMixin, generics.ListAPIView):
         DjangoFilterBackend,
         SearchFilter,
     ]
-    search_fields = ["title", "summary"]
+    # search_fields = ["title", "summary"]
 
     def get_queryset(self):
         qs = Post.objects.published().for_card()
@@ -302,6 +302,10 @@ class CategoryViewSet(PostOrderingMixin, viewsets.ReadOnlyModelViewSet):
         Only active categories, with a post count annotated.
         Post count respects published + not deleted.
         """
+        print(
+            "Category.objects.filter(is_active=True)",
+            Category.objects.filter(is_active=True),
+        )
 
         return (
             Category.objects.filter(is_active=True)
@@ -330,7 +334,7 @@ class CategoryViewSet(PostOrderingMixin, viewsets.ReadOnlyModelViewSet):
 
         # optionally include posts from child categories
         include_children = (
-            request.query_params.get("include_subcategories", "false").lower == "true"
+            request.query_params.get("include_subcategories", "false").lower() == "true"
         )
         if include_children:
             # Collect this category + all descendants
@@ -394,15 +398,13 @@ class TagViewSet(PostOrderingMixin, viewsets.ReadOnlyModelViewSet):
     lookup_field = "slug"
 
     def get_queryset(self):
-        """
-        Tags ordered by usage count (most used first).
-        Optionally filter by name with ?search=
-        """
         qs = Tag.objects.all()
 
-        search = self.request.query_params.get("search")
-        if search:
-            qs = qs.filter(name__icontains=search)
+        # Only apply search on the list endpoint, not on detail lookups.
+        if self.action == "list":
+            search = self.request.query_params.get("search")
+            if search:
+                qs = qs.filter(name__icontains=search)
 
         return qs.order_by("-usage_count", "name")
 

@@ -1,5 +1,6 @@
-# blog/filters.py
+# blog/api/filters.py
 import django_filters as filters
+from django.db.models import Count, Q
 
 from blog.models import Post
 
@@ -9,6 +10,7 @@ class PostFilter(filters.FilterSet):
     Filters for the post list.
 
     Query params:
+    - search: text search in title and summary
     - category: filter by category slug
     - tag: filter by tag slug
     - author: filter by author username
@@ -19,6 +21,10 @@ class PostFilter(filters.FilterSet):
     - min_likes: integer
     """
 
+    search = filters.CharFilter(
+        method="filter_search",
+        label="Search in title and summary",
+    )
     category = filters.CharFilter(
         field_name="category__slug",
         lookup_expr="exact",
@@ -58,6 +64,7 @@ class PostFilter(filters.FilterSet):
     class Meta:
         model = Post
         fields = [
+            "search",
             "category",
             "tag",
             "author",
@@ -68,13 +75,25 @@ class PostFilter(filters.FilterSet):
             "min_likes",
         ]
 
+    # ------------------------------------------------------------
+    # Methods
+    # ------------------------------------------------------------
+
+    def filter_search(self, queryset, name, value):
+        """
+        Search across title and summary. Case-insensitive substring
+        match. Skips if the value is blank.
+        """
+        value = (value or "").strip()
+        if not value:
+            return queryset
+        return queryset.filter(Q(title__icontains=value) | Q(summary__icontains=value))
+
     def filter_min_likes(self, queryset, name, value):
         """
         Filter by minimum like count.
         Uses annotation because likes are counted via the Like model.
         """
-        from django.db.models import Count
-
         return queryset.annotate(_like_count=Count("likes", distinct=True)).filter(
             _like_count__gte=value
         )
