@@ -1,0 +1,228 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create account — Torch</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'css/blog/posts.css' %}">
+  <link rel="stylesheet" href="{% static 'css/blog/auth.css' %}">
+</head>
+<body class="auth-body">
+
+<main class="auth-page">
+
+  <a href="/" class="auth-brand" aria-label="Torch home">
+    <span class="brand__mark">T</span>
+    <span class="brand__name">Torch</span>
+  </a>
+
+  <div class="auth-card">
+
+    <!-- ============================================================
+         Form state
+         ============================================================ -->
+    <div id="register-form-state">
+
+      <header class="auth-card__header">
+        <h1 class="auth-card__title">Create your account</h1>
+        <p class="auth-card__subtitle">
+          Join Torch to comment, bookmark, and follow writers.
+        </p>
+      </header>
+
+      <form id="register-form" class="auth-form" novalidate autocomplete="on">
+
+        <div class="auth-row">
+          <div class="auth-field">
+            <label for="register-first-name" class="auth-label">First name</label>
+            <input
+              type="text"
+              id="register-first-name"
+              name="first_name"
+              class="auth-input"
+              autocomplete="given-name"
+              maxlength="150"
+            >
+            <span class="auth-field-error" id="register-first-name-error"></span>
+          </div>
+
+          <div class="auth-field">
+            <label for="register-last-name" class="auth-label">Last name</label>
+            <input
+              type="text"
+              id="register-last-name"
+              name="last_name"
+              class="auth-input"
+              autocomplete="family-name"
+              maxlength="150"
+            >
+            <span class="auth-field-error" id="register-last-name-error"></span>
+          </div>
+        </div>
+
+        <div class="auth-field">
+          <label for="register-username" class="auth-label">Username</label>
+          <input
+            type="text"
+            id="register-username"
+            name="username"
+            class="auth-input"
+            autocomplete="username"
+            autocapitalize="none"
+            autocorrect="off"
+            spellcheck="false"
+            maxlength="30"
+            required
+          >
+          <span class="auth-hint">Letters, digits, and _ . - only. 3–30 characters.</span>
+          <span class="auth-field-error" id="register-username-error"></span>
+        </div>
+
+        <div class="auth-field">
+          <label for="register-email" class="auth-label">Email</label>
+          <input
+            type="email"
+            id="register-email"
+            name="email"
+            class="auth-input"
+            autocomplete="email"
+            autocapitalize="none"
+            spellcheck="false"
+            maxlength="150"
+          >
+          <span class="auth-hint">Used to verify your account and for password resets.</span>
+          <span class="auth-field-error" id="register-email-error"></span>
+        </div>
+
+        <div class="auth-field">
+          <label for="register-password" class="auth-label">Password</label>
+          <div class="auth-input-wrap">
+            <input
+              type="password"
+              id="register-password"
+              name="password"
+              class="auth-input"
+              autocomplete="new-password"
+              minlength="8"
+              required
+            >
+            <button
+              type="button"
+              class="auth-input-toggle"
+              id="register-password-toggle"
+              aria-label="Show password"
+              aria-pressed="false"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+                   aria-hidden="true">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <span class="auth-hint">At least 8 characters. Avoid common passwords.</span>
+          <span class="auth-field-error" id="register-password-error"></span>
+        </div>
+
+        <div class="auth-field">
+          <label for="register-password-confirm" class="auth-label">Confirm password</label>
+          <div class="auth-input-wrap">
+            <input
+              type="password"
+              id="register-password-confirm"
+              name="password_confirm"
+              class="auth-input"
+              autocomplete="new-password"
+              minlength="8"
+              required
+            >
+            <button
+              type="button"
+              class="auth-input-toggle"
+              id="register-password-confirm-toggle"
+              aria-label="Show password"
+              aria-pressed="false"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+                   aria-hidden="true">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+          <span class="auth-field-error" id="register-password-confirm-error"></span>
+        </div>
+
+        <div class="auth-error" id="register-error" hidden></div>
+
+        <button type="submit" class="auth-submit" id="register-submit">
+          Create account
+        </button>
+
+      </form>
+
+      <footer class="auth-card__footer">
+        <p>
+          Already have an account?
+          <a href="/login/" id="register-login-link">Log in</a>
+        </p>
+      </footer>
+
+    </div>
+
+    <!-- ============================================================
+         Success state
+         ============================================================ -->
+    <div id="register-success-state" hidden>
+
+      <div class="auth-success">
+        <div class="auth-success__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16v16H4z" opacity="0"/>
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+
+        <h1 class="auth-card__title">Check your inbox</h1>
+        <p class="auth-card__subtitle" id="register-success-message">
+          Your account was created. Check your email to verify your
+          address before logging in.
+        </p>
+
+        <div class="auth-success__actions">
+          <a href="/login/" class="auth-submit" id="register-success-login">
+            Go to login
+          </a>
+        </div>
+
+        <p class="auth-success__note">
+          Didn't get the email? Check spam, or
+          <a href="/verify-email-resend/" id="register-success-resend">
+            request a new verification link
+          </a>.
+        </p>
+      </div>
+
+    </div>
+
+  </div>
+
+  <a href="/" class="auth-back">← Back to home</a>
+
+</main>
+
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/blog/register.js' %}"></script>
+
+</body>
+</html>

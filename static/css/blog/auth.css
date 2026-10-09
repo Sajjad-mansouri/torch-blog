@@ -306,3 +306,102 @@
 .auth-back:hover {
   color: var(--text);
 }
+
+
+
+/* ------------------------------------------------------------
+   Two-column rows (for name fields)
+   ------------------------------------------------------------ */
+
+.auth-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+@media (max-width: 520px) {
+  .auth-row {
+    grid-template-columns: 1fr;
+    gap: 1.1rem;
+  }
+}
+
+/* ------------------------------------------------------------
+   Field hint text
+   ------------------------------------------------------------ */
+
+.auth-hint {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin-top: -0.15rem;
+}
+
+/* ------------------------------------------------------------
+   Success state
+   ------------------------------------------------------------ */
+
+.auth-success {
+  text-align: center;
+  padding: 0.5rem 0;
+}
+
+.auth-success__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1.25rem;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.auth-success__icon svg {
+  width: 32px;
+  height: 32px;
+}
+
+.auth-success .auth-card__title {
+  margin-bottom: 0.5rem;
+}
+
+.auth-success .auth-card__subtitle {
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.auth-success__actions {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.auth-success__actions .auth-submit {
+  display: inline-flex;
+  width: auto;
+  min-width: 160px;
+  text-decoration: none;
+  margin-top: 0;
+}
+
+.auth-success__note {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.auth-success__note a {
+  color: var(--accent);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.auth-success__note a:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}

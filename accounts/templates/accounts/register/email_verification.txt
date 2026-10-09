@@ -1,0 +1,16 @@
+{% autoescape off %}
+Hi {{ user.display_name }},
+
+Thanks for signing up on {{ site_name }}. Please confirm your
+email address by opening this link:
+
+{{ verify_url }}
+
+The link expires in 24 hours. Until you confirm, your account
+stays inactive and you won't be able to log in.
+
+If you didn't create an account on {{ site_name }}, you can
+safely ignore this email. Nothing will happen.
+
+— {{ site_name }}
+{% endautoescape %}
