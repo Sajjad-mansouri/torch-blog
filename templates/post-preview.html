@@ -1,0 +1,78 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview · Torch</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/blog/post-preview.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+</head>
+<body class="preview-body">
+
+  <!-- ============================================================
+       Preview mode banner (sticky, always visible)
+       ============================================================ -->
+  <div id="preview-banner" class="preview-banner">
+    <div class="preview-banner__inner">
+      <div class="preview-banner__left">
+        <span class="preview-banner__badge">PREVIEW</span>
+        <span class="preview-banner__text" id="preview-banner-text">
+          Loading preview…
+        </span>
+      </div>
+      <div class="preview-banner__right">
+        <span class="preview-banner__status" id="preview-status-pill">—</span>
+        <a href="#" id="preview-edit-link" class="btn btn--ghost btn--sm">
+          Edit post
+        </a>
+        <button id="preview-exit-btn" class="btn btn--ghost btn--sm" type="button">
+          Exit preview
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       Main
+       ============================================================ -->
+  <main class="preview-main" id="preview-main" aria-busy="true">
+
+    <!-- Loading skeleton -->
+    <div id="preview-skeleton" class="skeleton-wrap">
+      <div class="skeleton skeleton--title"></div>
+      <div class="skeleton skeleton--meta"></div>
+      <div class="skeleton skeleton--hero"></div>
+      <div class="skeleton skeleton--line"></div>
+      <div class="skeleton skeleton--line"></div>
+      <div class="skeleton skeleton--line skeleton--line--short"></div>
+    </div>
+
+    <!-- Error state -->
+    <div id="preview-error" class="preview-error" hidden>
+      <div class="preview-error__icon">⚠</div>
+      <h2 class="preview-error__title" id="preview-error-title">Unable to load preview</h2>
+      <p class="preview-error__message" id="preview-error-message"></p>
+      <div class="preview-error__actions">
+        <button id="preview-retry-btn" class="btn btn--primary" type="button">Retry</button>
+        <a href="/dashboard/posts/" class="btn btn--ghost">Back to dashboard</a>
+      </div>
+    </div>
+
+    <!-- The actual article is rendered here by JS -->
+    <article id="preview-article" class="post-article" hidden></article>
+
+  </main>
+
+  <!-- Toast host -->
+  <div id="toast-host" class="toast-host" aria-live="polite"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+  <script src="{% static 'js/api.js' %}"></script>
+  <script src="{% static 'js/blog/post-preview.js' %}"></script>
+</body>
+</html>

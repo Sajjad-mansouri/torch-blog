@@ -17,10 +17,7 @@ from interactions.models import Comment
 from .filters import PostFilter
 from .mixins import PostOrderingMixin
 from .pagination import PostPagination
-from .permissions import (
-    CanSubmitPost,
-    IsAuthorOrEditorOrReadOnly,
-)
+from .permissions import CanSubmitPost, IsAuthorOrEditorOrReadOnly, IsOwnerOrEditor
 from .serializers import (
     CategorySerializer,
     HomeSerializer,
@@ -985,3 +982,91 @@ class MePostViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
                 ).data,
             }
         )
+
+
+class PostPreviewAPIView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated, IsOwnerOrEditor]
+    serializer_class = PostDetailSerializer
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        print("queryset")
+        return (
+            Post.objects.filter(is_deleted=False)
+            .select_related("author", "category")
+            .prefetch_related("tags", "extra_categories")
+        )
+
+    def retrieve(self, request, *args, **kwargs):
+        post = self.get_object()
+
+        # Note: no record_view() call here. Preview does not
+        # count as a view.
+
+        context = self.get_serializer_context()
+        context.update(self._build_nested_context(post, request))
+
+        serializer = self.get_serializer(post, context=context)
+        return Response(serializer.data)
+
+    def _build_nested_context(self, post, request):
+        """
+        Same nested context builder as PostDetailAPIView. Kept
+        duplicated here rather than shared via a mixin so the
+        two views can evolve independently.
+
+        If you prefer, extract this into a mixin and use it in
+        both views. For now, duplication is fine.
+        """
+        top_level_comments = (
+            post.comments.filter(
+                status="approved",
+                is_deleted=False,
+                parent__isnull=True,
+            )
+            .select_related("author")
+            .prefetch_related(
+                Prefetch(
+                    "replies",
+                    queryset=Comment.objects.filter(status="approved", is_deleted=False)
+                    .select_related("author")
+                    .annotate(like_count=Count("likes", distinct=True))
+                    .order_by("created_at"),
+                ),
+            )
+            .annotate(like_count=Count("likes", distinct=True))
+            .order_by("created_at")
+        )
+
+        similar_posts = get_similar_posts(post, limit=4)
+        author_other_posts = get_author_other_posts(post, limit=3)
+
+        liked_post_ids = set()
+        bookmarked_post_ids = set()
+        liked_comment_ids = set()
+
+        if request.user.is_authenticated:
+            liked_post_ids = set(
+                request.user.post_likes.filter(post_id=post.id).values_list(
+                    "post_id", flat=True
+                )
+            )
+            bookmarked_post_ids = set(
+                request.user.bookmarks.filter(post_id=post.id).values_list(
+                    "post_id", flat=True
+                )
+            )
+            liked_comment_ids = set(
+                request.user.comment_likes.filter(comment__post=post).values_list(
+                    "comment_id", flat=True
+                )
+            )
+
+        return {
+            "top_level_comments": top_level_comments,
+            "similar_posts": similar_posts,
+            "author_other_posts": author_other_posts,
+            "liked_post_ids": liked_post_ids,
+            "bookmarked_post_ids": bookmarked_post_ids,
+            "liked_comment_ids": liked_comment_ids,
+        }

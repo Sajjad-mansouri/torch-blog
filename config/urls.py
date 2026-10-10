@@ -74,6 +74,11 @@ urlpatterns = [
         name="post-detail-page",
     ),
     path(
+        "dashboard/posts/<slug:slug>/preview/",
+        TemplateView.as_view(template_name="post-preview.html"),
+        name="post-preview",
+    ),
+    path(
         "author/<str:username>/",
         TemplateView.as_view(template_name="author.html"),
         name="author-page",

@@ -18,6 +18,11 @@ urlpatterns = [
     path("home/", views.HomeAPIView.as_view(), name="home"),
     path("posts/", views.PostListAPIView.as_view(), name="post_list"),
     path("posts/<slug:slug>/", views.PostDetailAPIView.as_view(), name="post-detail"),
+    path(
+        "posts/<slug:slug>/preview/",
+        views.PostPreviewAPIView.as_view(),
+        name="post-preview",
+    ),
     path("search/", views.SearchAPIView.as_view(), name="search"),
     path("search/suggest/", views.SearchSuggestView.as_view(), name="search-suggest"),
     # ViewSet-generated endpoints
