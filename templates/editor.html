@@ -1,0 +1,394 @@
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}Editor dashboard · Torch{% endblock %}
+
+{% block style %}
+  <link rel="stylesheet" href="{% static 'css/blog/editor.css' %}">
+{% endblock %}
+
+{% block main %}
+
+<div class="editor-hub">
+
+  <header class="editor-hub__header">
+    <div class="editor-hub__header-inner">
+      <div>
+        <h1 class="editor-hub__title">Editor dashboard</h1>
+        <p class="editor-hub__subtitle">
+          Review submissions, moderate comments, manage taxonomy and users.
+        </p>
+      </div>
+
+      <div class="editor-hub__header-side">
+        <span class="editor-hub__pill" id="editor-role-pill">Editor</span>
+        <a href="/" class="btn btn--ghost btn--sm editor-hub__home-link">
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+            <path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2h-4v-6h-6v6H5a2 2 0 0 1-2-2V10z"
+                  fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Back to site</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <nav class="editor-tabs" role="tablist" aria-label="Editor sections">
+    <button class="editor-tab is-active" role="tab" data-tab="review-queue" aria-selected="true">
+      Review Queue
+      <span class="editor-tab__badge" id="tab-badge-queue" hidden>0</span>
+    </button>
+    <button class="editor-tab" role="tab" data-tab="posts" aria-selected="false">
+      All Posts
+    </button>
+    <button class="editor-tab" role="tab" data-tab="featured" aria-selected="false">
+      Featured
+      <span class="editor-tab__badge" id="tab-badge-featured" hidden>0</span>
+    </button>
+    <button class="editor-tab" role="tab" data-tab="comments" aria-selected="false">
+      Comments
+      <span class="editor-tab__badge" id="tab-badge-comments" hidden>0</span>
+    </button>
+    <button class="editor-tab" role="tab" data-tab="users" aria-selected="false">
+      Users
+    </button>
+    <button class="editor-tab" role="tab" data-tab="taxonomy" aria-selected="false">
+      Taxonomy
+    </button>
+    <button class="editor-tab" role="tab" data-tab="settings" aria-selected="false">
+      Settings
+    </button>
+    <button class="editor-tab" role="tab" data-tab="activity" aria-selected="false">
+      Activity Log
+    </button>
+  </nav>
+
+  <section class="editor-panels">
+
+    <div class="editor-panel is-active" data-panel="review-queue" role="tabpanel">
+      <div class="editor-panel__toolbar">
+        <div class="editor-panel__toolbar-left">
+          <h2 class="editor-panel__title">Pending review</h2>
+          <span class="editor-panel__count" id="queue-count">—</span>
+        </div>
+        <button class="btn btn--ghost btn--sm" data-refresh="review-queue">Refresh</button>
+      </div>
+      <div id="queue-list" class="editor-list"></div>
+      <div id="queue-pagination" class="editor-pagination"></div>
+    </div>
+
+    <div class="editor-panel" data-panel="posts" role="tabpanel" hidden>
+      <div class="editor-panel__toolbar">
+        <div class="editor-panel__toolbar-left">
+          <h2 class="editor-panel__title">All posts</h2>
+          <span class="editor-panel__count" id="posts-count">—</span>
+        </div>
+        <div class="editor-panel__filters">
+          <select id="posts-status-filter" class="input input--sm">
+            <option value="">All statuses</option>
+            <option value="draft">Draft</option>
+            <option value="pending">Pending</option>
+            <option value="changes_requested">Changes requested</option>
+            <option value="approved">Approved</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="published">Published</option>
+            <option value="rejected">Rejected</option>
+            <option value="unpublished">Unpublished</option>
+            <option value="archived">Archived</option>
+          </select>
+          <input id="posts-search" type="search" class="input input--sm"
+                 placeholder="Search title or summary…">
+          <button class="btn btn--ghost btn--sm" data-refresh="posts">Refresh</button>
+        </div>
+      </div>
+      <div id="posts-list" class="editor-list"></div>
+      <div id="posts-pagination" class="editor-pagination"></div>
+    </div>
+
+    <div class="editor-panel" data-panel="featured" role="tabpanel" hidden>
+      <div class="editor-panel__toolbar">
+        <div class="editor-panel__toolbar-left">
+          <h2 class="editor-panel__title">Featured posts</h2>
+          <span class="editor-panel__count" id="featured-count">—</span>
+        </div>
+        <div class="editor-panel__filters">
+          <button class="btn btn--primary btn--sm" id="featured-add-btn">Add post</button>
+          <button class="btn btn--ghost btn--sm" data-refresh="featured">Refresh</button>
+        </div>
+      </div>
+
+      <p class="editor-hint">
+        Drag rows to change the order. The hero section on the home page uses this order.
+      </p>
+
+      <div id="featured-list" class="editor-list editor-list--sortable"></div>
+    </div>
+
+    <div class="editor-panel" data-panel="comments" role="tabpanel" hidden>
+      <div class="editor-panel__toolbar">
+        <div class="editor-panel__toolbar-left">
+          <h2 class="editor-panel__title">Comments</h2>
+          <span class="editor-panel__count" id="comments-count">—</span>
+        </div>
+        <div class="editor-panel__filters">
+          <select id="comments-status-filter" class="input input--sm">
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="spam">Spam</option>
+            <option value="">All</option>
+          </select>
+          <input id="comments-search" type="search" class="input input--sm"
+                 placeholder="Search body…">
+          <button class="btn btn--ghost btn--sm" data-refresh="comments">Refresh</button>
+        </div>
+      </div>
+      <div id="comments-list" class="editor-list"></div>
+      <div id="comments-pagination" class="editor-pagination"></div>
+    </div>
+
+    <div class="editor-panel" data-panel="users" role="tabpanel" hidden>
+      <div class="editor-panel__toolbar">
+        <div class="editor-panel__toolbar-left">
+          <h2 class="editor-panel__title">Users</h2>
+          <span class="editor-panel__count" id="users-count">—</span>
+        </div>
+        <div class="editor-panel__filters">
+          <select id="users-role-filter" class="input input--sm">
+            <option value="">All roles</option>
+            <option value="reader">Reader</option>
+            <option value="author">Author</option>
+            <option value="editor">Editor</option>
+          </select>
+          <input id="users-search" type="search" class="input input--sm"
+                 placeholder="Search username, name, email…">
+          <button class="btn btn--ghost btn--sm" data-refresh="users">Refresh</button>
+        </div>
+      </div>
+      <div id="users-list" class="editor-list"></div>
+      <div id="users-pagination" class="editor-pagination"></div>
+    </div>
+
+    <div class="editor-panel" data-panel="taxonomy" role="tabpanel" hidden>
+      <div class="editor-taxonomy">
+        <div class="editor-taxonomy__col">
+          <div class="editor-panel__toolbar">
+            <h2 class="editor-panel__title">Categories</h2>
+            <button class="btn btn--primary btn--sm" id="new-category-btn">New</button>
+          </div>
+          <div id="categories-list" class="editor-list"></div>
+        </div>
+
+        <div class="editor-taxonomy__col">
+          <div class="editor-panel__toolbar">
+            <h2 class="editor-panel__title">Tags</h2>
+            <button class="btn btn--primary btn--sm" id="new-tag-btn">New</button>
+          </div>
+          <div id="tags-list" class="editor-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="editor-panel" data-panel="settings" role="tabpanel" hidden>
+      <div class="editor-panel__toolbar">
+        <h2 class="editor-panel__title">Site settings</h2>
+        <button class="btn btn--primary btn--sm" id="save-settings-btn">Save changes</button>
+      </div>
+      <form id="settings-form" class="editor-settings" novalidate>
+        <div class="editor-settings__grid">
+
+          <div class="field">
+            <label for="s-site-title" class="field__label">Site title</label>
+            <input id="s-site-title" name="site_title" type="text"
+                   maxlength="100" class="input">
+          </div>
+
+          <div class="field">
+            <label for="s-tagline" class="field__label">Tagline</label>
+            <input id="s-tagline" name="tagline" type="text"
+                   maxlength="200" class="input">
+          </div>
+
+          <div class="field field--full">
+            <label for="s-hero-text" class="field__label">Hero text</label>
+            <textarea id="s-hero-text" name="hero_text" maxlength="300"
+                      rows="2" class="input input--textarea"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="s-hero-cta-text" class="field__label">Hero CTA text</label>
+            <input id="s-hero-cta-text" name="hero_cta_text" type="text"
+                   maxlength="50" class="input">
+          </div>
+
+          <div class="field">
+            <label for="s-hero-cta-link" class="field__label">Hero CTA link</label>
+            <input id="s-hero-cta-link" name="hero_cta_link" type="text"
+                   maxlength="200" class="input">
+          </div>
+
+          <div class="field">
+            <label for="s-posts-per-page" class="field__label">Posts per page</label>
+            <input id="s-posts-per-page" name="posts_per_page" type="number"
+                   min="1" class="input">
+          </div>
+
+          <div class="field">
+            <label for="s-featured-count" class="field__label">Featured count</label>
+            <input id="s-featured-count" name="featured_count" type="number"
+                   min="1" class="input">
+          </div>
+
+          <div class="field field--full">
+            <label for="s-footer-text" class="field__label">Footer text</label>
+            <input id="s-footer-text" name="footer_text" type="text"
+                   maxlength="300" class="input">
+          </div>
+
+        </div>
+      </form>
+    </div>
+
+    <div class="editor-panel" data-panel="activity" role="tabpanel" hidden>
+      <div class="editor-panel__toolbar">
+        <div class="editor-panel__toolbar-left">
+          <h2 class="editor-panel__title">Activity log</h2>
+          <span class="editor-panel__count" id="activity-count">—</span>
+        </div>
+        <div class="editor-panel__filters">
+          <select id="activity-action-filter" class="input input--sm">
+            <option value="">All actions</option>
+            <option value="post_created">Post created</option>
+            <option value="post_edited">Post edited</option>
+            <option value="post_submitted">Post submitted</option>
+            <option value="post_published">Post published</option>
+            <option value="post_rejected">Post rejected</option>
+            <option value="post_unpublished">Post unpublished</option>
+            <option value="post_deleted">Post deleted</option>
+            <option value="post_restored">Post restored</option>
+            <option value="comment_deleted">Comment deleted</option>
+            <option value="user_role_changed">User role changed</option>
+            <option value="user_banned">User banned</option>
+            <option value="settings_updated">Settings updated</option>
+          </select>
+          <button class="btn btn--ghost btn--sm" data-refresh="activity">Refresh</button>
+        </div>
+      </div>
+      <div id="activity-list" class="editor-list"></div>
+      <div id="activity-pagination" class="editor-pagination"></div>
+    </div>
+
+  </section>
+
+</div>
+
+<div id="post-decision-modal" class="modal-backdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3 class="modal__title" id="post-decision-title">Confirm</h3>
+    <p class="modal__message" id="post-decision-message"></p>
+    <p class="modal__meta" id="post-decision-existing-meta" hidden></p>
+    <textarea id="post-decision-note" class="input input--textarea" rows="3"
+              placeholder="Add a note (optional)…" style="width:100%;margin-bottom:1rem;"
+              hidden></textarea>
+    <div class="modal__actions">
+      <button class="btn btn--ghost" id="post-decision-cancel" type="button">Cancel</button>
+      <button class="btn btn--primary" id="post-decision-confirm" type="button">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div id="taxonomy-modal" class="modal-backdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3 class="modal__title" id="taxonomy-modal-title">New</h3>
+    <form id="taxonomy-form" class="editor-taxonomy-form" novalidate>
+      <div class="field">
+        <label for="tax-name" class="field__label">Name</label>
+        <input id="tax-name" name="name" type="text" maxlength="100" class="input" required>
+      </div>
+      <div class="field">
+        <label for="tax-slug" class="field__label">Slug (optional)</label>
+        <input id="tax-slug" name="slug" type="text" maxlength="120" class="input"
+               placeholder="auto-generated">
+      </div>
+      <div class="field" id="tax-description-field">
+        <label for="tax-description" class="field__label">Description</label>
+        <textarea id="tax-description" name="description" maxlength="500"
+                  rows="2" class="input input--textarea"></textarea>
+      </div>
+      <div class="field" id="tax-parent-field">
+        <label for="tax-parent" class="field__label">Parent category</label>
+        <select id="tax-parent" name="parent" class="input">
+          <option value="">— None —</option>
+        </select>
+      </div>
+      <div class="field" id="tax-order-field">
+        <label for="tax-order" class="field__label">Order</label>
+        <input id="tax-order" name="order" type="number" min="0" value="0" class="input">
+      </div>
+      <div class="field field--inline" id="tax-active-field">
+        <label class="checkbox">
+          <input id="tax-active" name="is_active" type="checkbox" checked>
+          <span>Active</span>
+        </label>
+      </div>
+      <div class="modal__actions">
+        <button class="btn btn--ghost" id="taxonomy-cancel" type="button">Cancel</button>
+        <button class="btn btn--primary" type="submit">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="user-modal" class="modal-backdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3 class="modal__title" id="user-modal-title">Change role</h3>
+    <p class="modal__message" id="user-modal-message"></p>
+    <div id="user-modal-body"></div>
+    <div class="modal__actions">
+      <button class="btn btn--ghost" id="user-modal-cancel" type="button">Cancel</button>
+      <button class="btn btn--primary" id="user-modal-confirm" type="button">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="confirm-modal" class="modal-backdrop" hidden>
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3 class="modal__title" id="confirm-title">Confirm</h3>
+    <p class="modal__message" id="confirm-message"></p>
+    <div class="modal__actions">
+      <button class="btn btn--ghost" id="confirm-cancel" type="button">Cancel</button>
+      <button class="btn btn--danger" id="confirm-ok" type="button">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div id="featured-add-modal" class="modal-backdrop" hidden>
+  <div class="modal modal--wide" role="dialog" aria-modal="true">
+    <h3 class="modal__title">Add to featured</h3>
+    <p class="modal__message">
+      Pick a published post that isn't featured yet.
+    </p>
+
+    <input id="featured-search" type="search" class="input"
+           placeholder="Search posts…" autocomplete="off"
+           style="width:100%;margin-bottom:0.75rem;">
+
+    <div id="featured-candidates" class="editor-list editor-list--compact"></div>
+
+    <div id="featured-candidates-pagination" class="editor-pagination"></div>
+
+    <div class="modal__actions">
+      <button class="btn btn--ghost" id="featured-add-cancel" type="button">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-host" class="toast-host" aria-live="polite"></div>
+
+{% endblock %}
+
+{% block script %}
+  <script src="{% static 'js/api.js' %}" defer></script>
+  <script src="{% static 'js/blog/editor.js' %}" defer></script>
+{% endblock %}

@@ -1,5 +1,6 @@
 # editor/views_posts.py
-from django.db.models import Count, Q
+from django.db import transaction
+from django.db.models import Count, Max, Q
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, viewsets
 from rest_framework.decorators import action
@@ -8,7 +9,11 @@ from rest_framework.response import Response
 
 from blog.api.pagination import PostPagination
 from blog.api.permissions import IsEditor
-from blog.api.serializers import PostCardSerializer, PostDetailSerializer
+from blog.api.serializers import (
+    EditorPostCardSerializer,
+    PostCardSerializer,
+    PostDetailSerializer,
+)
 from blog.models import Post
 from editor.api.serializers import (
     FeaturedReorderSerializer,
@@ -37,7 +42,7 @@ class ReviewQueueView(generics.ListAPIView):
     """
 
     permission_classes = [IsEditor]
-    serializer_class = PostCardSerializer
+    serializer_class = EditorPostCardSerializer
     pagination_class = PostPagination
 
     def get_queryset(self):
@@ -82,7 +87,7 @@ class EditorPostListView(generics.ListAPIView):
     """
 
     permission_classes = [IsEditor]
-    serializer_class = PostCardSerializer
+    serializer_class = EditorPostCardSerializer
     pagination_class = PostPagination
 
     def get_queryset(self):
@@ -248,22 +253,78 @@ class PostDecisionViewSet(viewsets.GenericViewSet):
             raise ValidationError({"detail": str(e)}) from None
         return self._respond(post)
 
+    @action(detail=True, methods=["post"], url_path="reconsider")
+    def reconsider(self, request, slug=None):
+        """
+        POST /api/v1/editor/posts/<slug>/reconsider/
+
+        Moves a rejected or changes_requested post back to pending
+        so it re-enters the review queue. Clears the previous
+        decision metadata (rejection_reason, changes_requested_note)
+        and the reviewer record.
+
+        This is the undo path for an accidental decision.
+        """
+        post = self.get_object()
+
+        allowed = {Post.Status.REJECTED, Post.Status.CHANGES_REQUESTED}
+        if post.status not in allowed:
+            raise ValidationError(
+                {
+                    "detail": (
+                        f'Only posts in "rejected" or "changes_requested" '
+                        f'can be reconsidered. Current status: "{post.status}".'
+                    )
+                }
+            )
+
+        with transaction.atomic():
+            post.status = Post.Status.PENDING
+            post.rejection_reason = ""
+            post.changes_requested_note = ""
+            post.reviewed_by = None
+            post.reviewed_at = None
+            post.save(
+                update_fields=[
+                    "status",
+                    "rejection_reason",
+                    "changes_requested_note",
+                    "reviewed_by",
+                    "reviewed_at",
+                    "updated_at",
+                ]
+            )
+
+        return self._respond(post)
+
 
 # ============================================================
 # Featured posts
 # ============================================================
 
 
+# editor/api/views_posts.py (replace the FeaturedPostsViewSet class)
+
+
 class FeaturedPostsViewSet(viewsets.GenericViewSet):
     """
-    list:    GET   /api/v1/editor/featured/
-    reorder: PATCH /api/v1/editor/featured/reorder/
+    list:      GET    /api/v1/editor/featured/
+    candidates:GET    /api/v1/editor/featured/candidates/
+    add:       POST   /api/v1/editor/featured/<slug>/add/
+    remove:    DELETE /api/v1/editor/featured/<slug>/remove/
+    reorder:   PATCH  /api/v1/editor/featured/reorder/
     """
 
     permission_classes = [IsEditor]
     serializer_class = PostCardSerializer
+    lookup_field = "slug"
+
+    # ------------------------------------------------------------
+    # Base querysets
+    # ------------------------------------------------------------
 
     def get_queryset(self):
+        """Currently featured posts, in display order."""
         return (
             Post.objects.filter(is_featured=True, is_deleted=False)
             .select_related("author", "category")
@@ -283,15 +344,139 @@ class FeaturedPostsViewSet(viewsets.GenericViewSet):
             .order_by("featured_order", "-published_at")
         )
 
+    def _candidate_queryset(self):
+        """
+        Posts eligible to be featured: published, not deleted,
+        not already featured.
+        """
+        return (
+            Post.objects.filter(
+                status=Post.Status.PUBLISHED,
+                is_deleted=False,
+                is_featured=False,
+            )
+            .select_related("author", "category")
+            .prefetch_related("tags")
+            .annotate(
+                like_count=Count("likes", distinct=True),
+                comment_count=Count(
+                    "comments",
+                    filter=Q(
+                        comments__status="approved",
+                        comments__is_deleted=False,
+                    ),
+                    distinct=True,
+                ),
+                bookmark_count=Count("bookmarks", distinct=True),
+            )
+            .order_by("-published_at")
+        )
+
+    # ------------------------------------------------------------
+    # List
+    # ------------------------------------------------------------
+
     def list(self, request):
         qs = self.get_queryset()
         serializer = self.get_serializer(qs, many=True, context={"request": request})
         return Response(serializer.data)
 
+    # ------------------------------------------------------------
+    # Candidates — published posts not yet featured
+    # ------------------------------------------------------------
+
+    @action(detail=False, methods=["get"], url_path="candidates")
+    def candidates(self, request):
+        """
+        GET /api/v1/editor/featured/candidates/?search=&page=
+
+        Returns published, non-featured posts for the "add to
+        featured" picker. Supports search across title/summary.
+        """
+        qs = self._candidate_queryset()
+
+        search = request.query_params.get("search")
+        if search:
+            qs = qs.filter(Q(title__icontains=search) | Q(summary__icontains=search))
+
+        paginator = PostPagination()
+        page = paginator.paginate_queryset(qs, request, view=self)
+        if page is not None:
+            serializer = self.get_serializer(
+                page, many=True, context={"request": request}
+            )
+            return paginator.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(qs, many=True, context={"request": request})
+        return Response(serializer.data)
+
+    # ------------------------------------------------------------
+    # Add a post to the featured set
+    # ------------------------------------------------------------
+
+    @action(detail=True, methods=["post"], url_path="add")
+    def add(self, request, slug=None):
+        """
+        POST /api/v1/editor/featured/<slug>/add/
+
+        Sets is_featured=True and appends the post to the end
+        of the featured order.
+        """
+        post = get_object_or_404(
+            Post,
+            slug=slug,
+            is_deleted=False,
+            status=Post.Status.PUBLISHED,
+        )
+
+        if post.is_featured:
+            raise ValidationError({"detail": "Post is already featured."})
+
+        with transaction.atomic():
+            max_order = (
+                Post.objects.filter(is_featured=True, is_deleted=False)
+                .aggregate(m=Max("featured_order"))
+                .get("m")
+            )
+            next_order = 0 if max_order is None else max_order + 1
+
+            post.is_featured = True
+            post.featured_order = next_order
+            post.save(update_fields=["is_featured", "featured_order", "updated_at"])
+
+        serializer = self.get_serializer(post, context={"request": request})
+        return Response(serializer.data, status=201)
+
+    # ------------------------------------------------------------
+    # Remove a post from the featured set
+    # ------------------------------------------------------------
+
+    @action(detail=True, methods=["delete"], url_path="remove")
+    def remove(self, request, slug=None):
+        """
+        DELETE /api/v1/editor/featured/<slug>/remove/
+
+        Clears is_featured and featured_order.
+        """
+        post = get_object_or_404(Post, slug=slug, is_deleted=False)
+
+        if not post.is_featured:
+            raise ValidationError({"detail": "Post is not featured."})
+
+        post.is_featured = False
+        post.featured_order = None
+        post.save(update_fields=["is_featured", "featured_order", "updated_at"])
+
+        return Response(status=204)
+
+    # ------------------------------------------------------------
+    # Reorder
+    # ------------------------------------------------------------
+
     @action(detail=False, methods=["patch"], url_path="reorder")
     def reorder(self, request):
         """
-        Reorder featured posts.
+        PATCH /api/v1/editor/featured/reorder/
 
         Payload:
         {
@@ -302,7 +487,6 @@ class FeaturedPostsViewSet(viewsets.GenericViewSet):
         }
 
         Only IDs that belong to the featured set are reordered.
-        IDs not in the payload keep their current order.
         """
         payload = FeaturedReorderSerializer(data=request.data)
         payload.is_valid(raise_exception=True)
@@ -310,7 +494,6 @@ class FeaturedPostsViewSet(viewsets.GenericViewSet):
         items = payload.validated_data["items"]
         ids = [item["id"] for item in items]
 
-        # Verify all IDs exist and are featured
         existing = set(
             Post.objects.filter(
                 pk__in=ids, is_featured=True, is_deleted=False
@@ -327,14 +510,10 @@ class FeaturedPostsViewSet(viewsets.GenericViewSet):
                 }
             )
 
-        # Apply new orders in a single transaction
-        from django.db import transaction
-
         with transaction.atomic():
             for item in items:
                 Post.objects.filter(pk=item["id"]).update(featured_order=item["order"])
 
-        # Return the new ordering
         qs = self.get_queryset()
         serializer = self.get_serializer(qs, many=True, context={"request": request})
         return Response(serializer.data)

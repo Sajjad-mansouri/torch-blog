@@ -57,6 +57,7 @@ class CommentSerializer(serializers.ModelSerializer):
             "like_count",
             "is_liked",
             "replies",
+            "status",
         ]
 
     def get_author(self, obj):

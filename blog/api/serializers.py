@@ -96,6 +96,31 @@ class PostCardSerializer(serializers.ModelSerializer):
         }
 
 
+class EditorPostCardSerializer(PostCardSerializer):
+    """
+    Extends PostCardSerializer with fields only editors should see.
+
+    Used by:
+      - editor.api.views.ReviewQueueView
+      - editor.api.views.EditorPostListView
+
+    Never use this on a public-facing endpoint.
+    """
+
+    rejection_reason = serializers.CharField(read_only=True)
+    changes_requested_note = serializers.CharField(read_only=True)
+    reviewed_by = AuthorBriefSerializer(read_only=True)
+    reviewed_at = serializers.DateTimeField(read_only=True)
+
+    class Meta(PostCardSerializer.Meta):
+        fields = PostCardSerializer.Meta.fields + [
+            "rejection_reason",
+            "changes_requested_note",
+            "reviewed_by",
+            "reviewed_at",
+        ]
+
+
 # ============================================================
 # Sidebar serializers
 # ============================================================
