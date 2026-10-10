@@ -1,0 +1,263 @@
+{% extends "_base.html" %}
+{% load static %}
+
+{% block title %}
+  {% if request.resolver_match.url_name == 'dashboard-post-edit' %}
+    Edit post
+  {% else %}
+    New post
+  {% endif %}
+  · Torch
+{% endblock %}
+
+{% block style %}
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@ckeditor/ckeditor5-build-classic@40.2.0/build/ckeditor.css">
+  <link rel="stylesheet" href="{% static 'css/blog/dashboard-post-edit.css' %}">
+{% endblock %}
+
+{% block main %}
+
+  <div class="editor-topbar">
+    <div class="editor-topbar__inner">
+
+      <div class="editor-topbar__left">
+        <a href="/dashboard/?tab=posts" class="editor-topbar__back" aria-label="Back to posts">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Posts</span>
+        </a>
+
+        <span class="editor-topbar__divider" aria-hidden="true"></span>
+
+        <span class="editor-topbar__mode" id="editor-mode-label">New post</span>
+
+        <span class="editor-topbar__status" id="editor-status-pill" data-status="draft">
+          Draft
+        </span>
+
+        <span class="editor-topbar__save-state" id="editor-save-state" hidden>
+          <span class="editor-topbar__dot"></span>
+          <span class="editor-topbar__save-text">Saving…</span>
+        </span>
+      </div>
+
+      <div class="editor-topbar__right">
+        <button id="preview-btn" class="btn btn--ghost btn--sm" type="button" disabled
+                title="Preview the post as a reader would see it">
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"
+                  fill="none" stroke="currentColor" stroke-width="2"/>
+            <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+          </svg>
+          Preview
+        </button>
+
+        <button id="save-btn" class="btn btn--ghost btn--sm" type="button"
+                title="Save draft (Ctrl/Cmd + S)">
+          Save draft
+        </button>
+
+        <button id="submit-btn" class="btn btn--primary btn--sm" type="button" hidden
+                title="Submit for editorial review">
+          Submit for review
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <main class="editor-main" id="editor-main">
+
+    <div id="editor-loading" class="editor-loading">
+      <div class="spinner"></div>
+      <p>Loading post…</p>
+    </div>
+
+    <div id="editor-error" class="editor-error" hidden>
+      <div class="editor-error__icon">⚠</div>
+      <h2 id="editor-error-title">Unable to load post</h2>
+      <p id="editor-error-msg"></p>
+      <a href="/dashboard/?tab=posts" class="btn btn--ghost">Back to posts</a>
+    </div>
+
+    <form id="post-form" class="editor-grid" novalidate hidden>
+
+      <section class="editor-col editor-col--main">
+
+        <div class="field">
+          <label for="field-title" class="field__label">
+            Title <span class="field__required">*</span>
+          </label>
+          <input id="field-title" name="title" type="text" maxlength="250"
+                 placeholder="An interesting title…" class="input input--title"
+                 required autocomplete="off">
+          <div class="field__counter"><span id="title-count">0</span> / 250</div>
+          <p class="field__error" id="error-title" hidden></p>
+        </div>
+
+        <div class="field">
+          <label for="field-slug" class="field__label">
+            Slug <span class="field__hint">Leave empty to auto-generate</span>
+          </label>
+          <div class="input-row">
+            <input id="field-slug" name="slug" type="text" maxlength="280"
+                   placeholder="auto-generated-from-title" class="input" autocomplete="off">
+            <button type="button" id="regen-slug-btn" class="btn btn--ghost btn--sm">
+              From title
+            </button>
+          </div>
+          <p class="field__error" id="error-slug" hidden></p>
+        </div>
+
+        <div class="field">
+          <label for="field-summary" class="field__label">
+            Summary <span class="field__hint">Shown in lists and cards</span>
+          </label>
+          <textarea id="field-summary" name="summary" maxlength="500" rows="3"
+                    class="input input--textarea"
+                    placeholder="A one- or two-sentence summary…"></textarea>
+          <div class="field__counter"><span id="summary-count">0</span> / 500</div>
+          <p class="field__error" id="error-summary" hidden></p>
+        </div>
+
+        <div class="field field--body">
+          <label class="field__label">Body <span class="field__required">*</span></label>
+          <div id="body-editor" class="editor-instance"></div>
+          <textarea id="field-body" name="body" hidden></textarea>
+          <p class="field__error" id="error-body" hidden></p>
+        </div>
+
+        <details class="accordion">
+          <summary class="accordion__summary">
+            <span>SEO &amp; Social</span>
+            <span class="accordion__chevron" aria-hidden="true">▸</span>
+          </summary>
+          <div class="accordion__body">
+            <div class="field">
+              <label for="field-meta-title" class="field__label">Meta title</label>
+              <input id="field-meta-title" name="meta_title" type="text"
+                     maxlength="200" class="input" autocomplete="off">
+            </div>
+            <div class="field">
+              <label for="field-meta-description" class="field__label">Meta description</label>
+              <textarea id="field-meta-description" name="meta_description"
+                        maxlength="300" rows="2" class="input input--textarea"></textarea>
+            </div>
+            <div class="field field--inline">
+              <label class="checkbox">
+                <input id="field-no-index" name="no_index" type="checkbox">
+                <span>Ask search engines not to index this post (<code>noindex</code>)</span>
+              </label>
+            </div>
+          </div>
+        </details>
+
+      </section>
+
+      <aside class="editor-col editor-col--side">
+
+        <div class="side-card">
+          <h3 class="side-card__title">Actions</h3>
+          <div class="side-card__body side-card__body--actions">
+            <button id="side-save-btn" class="btn btn--primary btn--block" type="button">
+              Save draft
+            </button>
+            <button id="side-submit-btn" class="btn btn--primary btn--block" type="button" hidden
+                    style="background: var(--accent); border-color: var(--accent);">
+              Submit for review
+            </button>
+            <a id="side-preview-link" href="#" class="btn btn--ghost btn--block"
+               target="_blank" rel="noopener" hidden>Open preview</a>
+            <button id="side-delete-btn" class="btn btn--ghost btn--block" type="button" hidden
+                    style="color:#b91c1c; border-color:#fca5a5;">
+              Delete post
+            </button>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h3 class="side-card__title">Featured image</h3>
+          <div class="side-card__body">
+            <div id="featured-preview" class="image-dropzone" tabindex="0">
+              <img id="featured-img" alt="" hidden>
+              <div id="featured-placeholder" class="image-dropzone__placeholder">
+                <span class="image-dropzone__icon">🖼</span>
+                <span>Drop an image or click to upload</span>
+                <small>JPG, PNG, WebP · max 5 MB</small>
+              </div>
+            </div>
+            <input id="field-featured-image" name="featured_image" type="file"
+                   accept="image/*" hidden>
+            <button id="featured-remove-btn" type="button"
+                    class="btn btn--ghost btn--sm btn--block" hidden>Remove image</button>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h3 class="side-card__title">Category</h3>
+          <div class="side-card__body">
+            <div class="field">
+              <label for="field-category" class="field__label">Primary</label>
+              <select id="field-category" name="category" class="input">
+                <option value="">— None —</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="field-extra-categories" class="field__label">Extra categories</label>
+              <select id="field-extra-categories" name="extra_categories"
+                      class="input" multiple size="5"></select>
+              <div class="field__hint">Hold Ctrl / ⌘ to select multiple</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="side-card">
+          <h3 class="side-card__title">Tags</h3>
+          <div class="side-card__body">
+            <div id="tag-picker" class="tag-picker">
+              <div id="tag-chips" class="tag-chips"></div>
+
+              <div class="tag-input-row">
+                <input id="tag-input" type="text" class="input"
+                       placeholder="Click to browse, or type to filter…" autocomplete="off">
+                <button type="button" id="tag-browse-btn"
+                        class="btn btn--ghost btn--sm" title="Show all tags">
+                  Browse
+                </button>
+              </div>
+
+              <div id="tag-suggestions" class="tag-suggestions" hidden></div>
+            </div>
+            <div class="field__hint">Only existing tags can be selected.</div>
+          </div>
+        </div>
+
+      </aside>
+    </form>
+  </main>
+
+  <div id="modal-backdrop" class="modal-backdrop" hidden>
+    <div class="modal">
+      <h3 class="modal__title" id="modal-title">Delete post?</h3>
+      <p class="modal__message" id="modal-message">
+        This will move the post to trash. You can restore it later from the dashboard.
+      </p>
+      <div class="modal__actions">
+        <button id="modal-cancel" class="btn btn--ghost" type="button">Cancel</button>
+        <button id="modal-confirm" class="btn btn--danger" type="button">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-host" class="toast-host" aria-live="polite"></div>
+
+{% endblock %}
+
+{% block script %}
+  <script src="{% static 'js/api.js' %}" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@ckeditor/ckeditor5-build-classic@40.2.0/build/ckeditor.js" defer></script>
+  <script src="{% static 'js/blog/dashboard-post-edit.js' %}" defer></script>
+{% endblock %}

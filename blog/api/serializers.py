@@ -419,6 +419,14 @@ class PostWriteSerializer(serializers.ModelSerializer):
     # ------------------------------------------------------------
     # Field-level validation and cleaning
     # ------------------------------------------------------------
+    def to_internal_value(self, data):
+        # multipart FormData: getlist/setlist available
+        data = data.copy()
+        if hasattr(data, "getlist") and hasattr(data, "setlist"):
+            for field in ("tags", "extra_categories"):
+                values = [v for v in data.getlist(field) if v not in ("", None)]
+                data.setlist(field, values)
+        return super().to_internal_value(data)
 
     def validate_title(self, value):
         value = value.strip()

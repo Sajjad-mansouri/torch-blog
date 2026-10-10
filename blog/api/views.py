@@ -648,14 +648,16 @@ class SearchSuggestView(APIView):
 class PostAuthorViewSet(
     viewsets.GenericViewSet,
     mixins.CreateModelMixin,
+    mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
     mixins.DestroyModelMixin,
 ):
     """
-    create:  POST   /api/v1/posts/
-    update:  PATCH  /api/v1/posts/<slug>/
-    destroy: DELETE /api/v1/posts/<slug>/
-    submit:  POST   /api/v1/posts/<slug>/submit/
+    create:   POST   /api/v1/dashboard/posts/
+    retrieve: GET    /api/v1/dashboard/posts/<slug>/
+    update:   PATCH  /api/v1/dashboard/posts/<slug>/
+    destroy:  DELETE /api/v1/dashboard/posts/<slug>/
+    submit:   POST   /api/v1/dashboard/posts/<slug>/submit/
     """
 
     permission_classes = [IsAuthorOrEditorOrReadOnly]
@@ -663,8 +665,14 @@ class PostAuthorViewSet(
 
     def get_queryset(self):
         """
-        Authors see their own posts in any status.
-        Editors see every post.
+        Authors see their own posts (any status).
+        Editors see every non-deleted post.
+
+        For retrieve: soft-deleted posts are excluded so the
+        editor form never opens a trashed post.
+
+        For update/destroy: soft-deleted posts remain accessible
+        so editors can act on them (restore, hard-delete, etc.).
         """
         qs = Post.objects.select_related("author", "category").prefetch_related(
             "tags", "extra_categories"
@@ -674,6 +682,9 @@ class PostAuthorViewSet(
         if not user.is_authenticated:
             return qs.none()
 
+        if self.action == "retrieve":
+            qs = qs.filter(is_deleted=False)
+
         if user.is_editor:
             return qs
         return qs.filter(author=user)
@@ -681,26 +692,19 @@ class PostAuthorViewSet(
     def get_serializer_class(self):
         if self.action in ("create", "update", "partial_update"):
             return PostWriteSerializer
-        return PostDetailSerializer
+        return PostDetailSerializer  # covers "retrieve"
 
     def perform_create(self, serializer):
-        """
-        New posts always belong to the current user and start as drafts.
-        """
         serializer.save(
             author=self.request.user,
             status=Post.Status.DRAFT,
         )
 
     def create(self, request, *args, **kwargs):
-        """
-        Create a draft. Returns the full post detail.
-        """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
 
-        # Return the full post so the client gets all fields
         post = serializer.instance
         read_serializer = PostDetailSerializer(post, context={"request": request})
         headers = self.get_success_headers(serializer.data)
@@ -711,16 +715,9 @@ class PostAuthorViewSet(
         )
 
     def update(self, request, *args, **kwargs):
-        """
-        Update a post. Only allowed for drafts, rejected,
-        or changes_requested posts (enforced by model.save()).
-        """
         instance = self.get_object()
-
-        # Check object-level permission
         self.check_object_permissions(request, instance)
 
-        # Enforce editability
         if not instance.can_be_edited_by(request.user):
             raise ValidationError(
                 {
@@ -734,17 +731,11 @@ class PostAuthorViewSet(
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        # Return the full post detail
         read_serializer = PostDetailSerializer(instance, context={"request": request})
         return Response(read_serializer.data)
 
     def destroy(self, request, *args, **kwargs):
-        """
-        Soft delete. Only allowed for drafts, rejected, or archived.
-        """
-        print("destroy")
         instance = self.get_object()
-        print("instance", instance)
         self.check_object_permissions(request, instance)
 
         if not instance.can_be_deleted_by(request.user):
@@ -755,10 +746,6 @@ class PostAuthorViewSet(
         instance.soft_delete(request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    # ------------------------------------------------------------
-    # Status transition — submit for review
-    # ------------------------------------------------------------
-
     @action(
         detail=True,
         methods=["post"],
@@ -766,9 +753,6 @@ class PostAuthorViewSet(
         permission_classes=[IsAuthenticated, CanSubmitPost],
     )
     def submit(self, request, slug=None):
-        """
-        Move a post from draft/rejected/changes_requested to pending.
-        """
         post = self.get_object()
         self.check_object_permissions(request, post)
         post.submit_for_review()
