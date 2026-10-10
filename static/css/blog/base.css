@@ -255,6 +255,36 @@ code, pre, kbd, samp { font-family: var(--font-mono); }
   font-size: 0.9rem;
   color: var(--text-soft);
 }
+/* ============================================================
+   Topbar user panel — editor tag + accent item
+   ============================================================ */
+
+.topbar__user-role-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 18px;
+  padding: 0 0.45rem;
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.topbar__user-item--accent {
+  color: var(--accent-hover);
+  font-weight: 600;
+}
+
+.topbar__user-item--accent:hover,
+.topbar__user-item--accent:focus-visible {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+}
 
 .topbar__avatar {
   width: 28px;

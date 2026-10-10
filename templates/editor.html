@@ -20,17 +20,7 @@
         </p>
       </div>
 
-      <div class="editor-hub__header-side">
-        <span class="editor-hub__pill" id="editor-role-pill">Editor</span>
-        <a href="/" class="btn btn--ghost btn--sm editor-hub__home-link">
-          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
-            <path d="M3 10l9-7 9 7v10a2 2 0 0 1-2 2h-4v-6h-6v6H5a2 2 0 0 1-2-2V10z"
-                  fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <span>Back to site</span>
-        </a>
-      </div>
+
     </div>
   </header>
 
@@ -390,5 +380,7 @@
 
 {% block script %}
   <script src="{% static 'js/api.js' %}" defer></script>
+  <script src="{% static 'js/topbar.js' %}" defer></script>
+
   <script src="{% static 'js/blog/editor.js' %}" defer></script>
 {% endblock %}

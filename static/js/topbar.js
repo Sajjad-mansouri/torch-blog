@@ -91,7 +91,6 @@
   let loadCategoriesPromise = null;
 
   async function loadCategories() {
-
     if (categoriesCache) return categoriesCache;
     if (loadCategoriesPromise) return loadCategoriesPromise;
 
@@ -497,6 +496,7 @@
   const mobileUserRole = document.getElementById('mobile-user-role');
   const mobileUserBadge = document.getElementById('mobile-user-badge');
   const mobileUserLogout = document.getElementById('mobile-user-logout');
+  const mobileUserEditorLink = document.getElementById('mobile-user-editor-link');
 
   // ------------------------------------------------------------
   // Logout helper
@@ -524,7 +524,7 @@
     }
 
     clearTokens();
-    window.location.href = '/';
+    window.location.href = '/home/';
   }
 
   // ------------------------------------------------------------
@@ -543,6 +543,7 @@
   function renderLoggedInTopbar(user, unreadCount) {
     const name = user.display_name || user.username || 'Account';
     const avatar = user.avatar_url || '/static/img/default-avatar.jpg';
+    const isEditor = user.role === 'editor';
 
     if (authSlot) {
       authSlot.innerHTML = `
@@ -574,6 +575,15 @@
             <a class="topbar__user-item" href="/dashboard/" role="menuitem">
               Dashboard
             </a>
+
+            ${isEditor ? `
+              <a class="topbar__user-item topbar__user-item--accent"
+                 href="/editor/" role="menuitem">
+                <span>Editor dashboard</span>
+                <span class="topbar__user-role-tag">Editor</span>
+              </a>
+            ` : ''}
+
             <a class="topbar__user-item" href="/dashboard/?tab=bookmarks" role="menuitem">
               My bookmarks
             </a>
@@ -620,6 +630,11 @@
       }
 
       mobileUserGroup.hidden = false;
+    }
+
+    // Toggle editor link in mobile menu
+    if (mobileUserEditorLink) {
+      mobileUserEditorLink.hidden = !isEditor;
     }
   }
 
