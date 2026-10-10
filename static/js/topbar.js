@@ -91,6 +91,7 @@
   let loadCategoriesPromise = null;
 
   async function loadCategories() {
+
     if (categoriesCache) return categoriesCache;
     if (loadCategoriesPromise) return loadCategoriesPromise;
 
@@ -297,7 +298,6 @@
           `<div class="topbar__dropdown-loading">Loading…</div>`;
         childrenPanel.innerHTML = '';
         const categories = await loadCategories();
-
         if (!categories.length) {
           parentsPanel.innerHTML =
             `<div class="topbar__dropdown-empty">No categories yet.</div>`;

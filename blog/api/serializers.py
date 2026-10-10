@@ -335,7 +335,6 @@ class PostDetailSerializer(serializers.ModelSerializer):
     @extend_schema_field(serializers.BooleanField)
     def get_is_liked(self, obj):
         request = self.context.get("request")
-        print("request", request, type(request))
         if not request or not request.user.is_authenticated:
             return False
 

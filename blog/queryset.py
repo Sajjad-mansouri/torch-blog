@@ -15,12 +15,14 @@ class PostQuerySet(models.QuerySet):
         return (
             self.published()
             .filter(is_featured=True)
-            .order_by("feature_order", "-published_at")
+            .order_by("featured_order", "-published_at")
         )
 
     def trending(self, days=7):
         cutoff = timezone.now() - timezone.timedelta(days=days)
-        return self.published().filter(published__gte=cutoff).order_by("-views_count")
+        return (
+            self.published().filter(published_at__gte=cutoff).order_by("-views_count")
+        )
 
     def latest(self):
         return self.published().order_by("-published_at")

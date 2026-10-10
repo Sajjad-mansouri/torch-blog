@@ -1,0 +1,87 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}Home — Torch{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{% static 'css/blog/posts.css' %}">
+<link rel="stylesheet" href="{% static 'css/blog/home.css' %}">
+{% endblock %}
+
+{% block main %}
+<main class="home">
+
+  <section class="home-hero" id="home-hero" aria-label="Featured stories">
+    <div class="home-hero__skeleton">
+      <div class="sk-block sk-block--lg"></div>
+      <div class="sk-block sk-block--sm"></div>
+      <div class="sk-block sk-block--sm"></div>
+    </div>
+  </section>
+
+  <div class="home-layout">
+
+    <div class="home-main">
+
+      <section class="home-section" id="latest-section" aria-labelledby="latest-title">
+        <header class="home-section__head">
+          <div>
+            <h2 class="home-section__title" id="latest-title">Latest stories</h2>
+            <p class="home-section__subtitle">Fresh perspectives, curated daily.</p>
+          </div>
+          <a href="/posts/" class="home-section__more">
+            All posts
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </header>
+        <div class="home-grid" id="latest-grid"></div>
+      </section>
+
+      <section class="home-section" id="trending-section" aria-labelledby="trending-title">
+        <header class="home-section__head">
+          <div>
+            <h2 class="home-section__title" id="trending-title">Trending this week</h2>
+            <p class="home-section__subtitle">What readers are loving right now.</p>
+          </div>
+        </header>
+        <div class="home-trending" id="trending-list"></div>
+      </section>
+
+    </div>
+
+    <aside class="home-side" aria-label="Explore">
+
+      <section class="home-side__block" id="categories-block" aria-labelledby="categories-title">
+        <h2 class="home-side__title" id="categories-title">Browse by category</h2>
+        <div class="home-categories" id="categories-list"></div>
+        <a href="/categories/" class="home-side__link">All categories →</a>
+      </section>
+
+      <section class="home-side__block" id="tags-block" aria-labelledby="tags-title">
+        <h2 class="home-side__title" id="tags-title">Popular tags</h2>
+        <div class="home-tags" id="tags-list"></div>
+      </section>
+
+    </aside>
+
+  </div>
+
+  <div class="home-error" id="home-error" hidden>
+    <div class="home-error__icon">⚠</div>
+    <h2 class="home-error__title">Could not load the home page</h2>
+    <p class="home-error__message" id="home-error-message"></p>
+    <button class="btn btn--primary" id="home-retry">Retry</button>
+  </div>
+
+</main>
+{% endblock %}
+
+{% block script %}
+  <script src="{% static 'js/api.js' %}" defer></script>
+  <script src="{% static 'js/blog/search.js' %}" defer></script>
+  <script src="{% static 'js/topbar.js' %}" defer></script>
+<script src="{% static 'js/blog/home.js' %}?v=5"></script>
+{% endblock %}

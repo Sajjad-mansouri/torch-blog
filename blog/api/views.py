@@ -75,7 +75,8 @@ class HomeAPIView(APIView):
         if cached is not None:
             return Response(cached)
 
-        data = self._buil_home_data()
+        data = self._build_home_data()
+
         cache.set(self.CACHE_KEY, data, self.CACHE_TTL)
         return Response(data)
 
@@ -299,10 +300,6 @@ class CategoryViewSet(PostOrderingMixin, viewsets.ReadOnlyModelViewSet):
         Only active categories, with a post count annotated.
         Post count respects published + not deleted.
         """
-        print(
-            "Category.objects.filter(is_active=True)",
-            Category.objects.filter(is_active=True),
-        )
 
         return (
             Category.objects.filter(is_active=True)
@@ -586,7 +583,7 @@ class SearchSuggestView(APIView):
     def get(self, request):
         raw_query = request.query_params.get("q", "")
         query = normalize_query(raw_query)
-        print(query)
+
         if query is None:
             return Response({"query": "", "results": []})
 
@@ -607,7 +604,7 @@ class SearchSuggestView(APIView):
 
         # Tags
         tags = search_tags(query, limit=self.PER_TYPE_LIMIT)
-        print(tags)
+
         for tag in tags:
             suggestions.append(
                 {
@@ -974,7 +971,6 @@ class PostPreviewAPIView(generics.RetrieveAPIView):
     lookup_field = "slug"
 
     def get_queryset(self):
-        print("queryset")
         return (
             Post.objects.filter(is_deleted=False)
             .select_related("author", "category")

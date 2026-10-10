@@ -68,10 +68,7 @@ def search_tags(query, limit=None):
         .filter(usage_count__gt=0)
         .order_by("-usage_count", "name")
     )
-    print(
-        Tag.objects.filter(name__icontains=query),
-        Tag.objects.filter(name__icontains=query).filter(usage_count__gt=0),
-    )
+
     if limit:
         qs = qs[:limit]
     return qs
