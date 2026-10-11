@@ -31,9 +31,11 @@ class AuthorViewSet(viewsets.ReadOnlyModelViewSet):
         Only authors and editors have public profiles.
         Readers don't publish, so they don't need one.
         """
-        return User.objects.filter(
-            role__in=[User.Role.AUTHOR, User.Role.EDITOR]
-        ).prefetch_related("social_links")
+        return (
+            User.objects.filter(role__in=[User.Role.AUTHOR, User.Role.EDITOR])
+            .order_by("username")
+            .prefetch_related("social_links")
+        )
 
     def get_serializer_class(self):
         # List action gets a lightweight serializer

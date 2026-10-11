@@ -63,7 +63,7 @@ class AuthorProfileSerializer(AuthorDetailSerializer):
     def get_stats(self, obj):
         # The view precomputes stats and passes them via context
         # to avoid running the aggregate query once per author.
-        return self.context.get("stat", {})
+        return self.context.get("stats", {})
 
     def get_recent_posts(self, obj):
         from blog.api.serializers import PostCardSerializer
