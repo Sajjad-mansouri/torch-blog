@@ -49,7 +49,9 @@ def record_view(request, post, dedup_hours=1):
     elif session_key:
         dedup_filter = models.Q(session_key=session_key)
     else:
-        dedup_filter = models.Q(ip_address=ip_address, user_agent=user_agent)
+        dedup_filter = models.Q(
+            ip_address=ip_address, user_agent=user_agent, user__isnull=True
+        )
 
     already = PostView.objects.filter(
         dedup_filter, post=post, created_at__gte=cutoff
@@ -58,7 +60,7 @@ def record_view(request, post, dedup_hours=1):
         return False
     PostView.objects.create(
         post=post,
-        user=request.user,
+        user=user,
         ip_address=ip_address,
         session_key=session_key,
         user_agent=user_agent,

@@ -79,7 +79,7 @@ class PostCardSerializer(serializers.ModelSerializer):
                 "can_delete": False,
                 "can_submit": False,
                 "can_preview": False,
-                "can_view_public": False,
+                "can_view_public": True,
             }
 
         # Preview: authors/editors on their own posts, in any status.
@@ -269,6 +269,12 @@ class CommentSerializer(serializers.ModelSerializer):
             many=True,
             context=self.context,
         ).data
+
+    def get_like_count(self, obj):
+        # Annotated value if present, property otherwise.
+        if hasattr(obj, "_like_count"):
+            return obj._like_count
+        return obj.likes.count()
 
 
 class PostDetailSerializer(serializers.ModelSerializer):

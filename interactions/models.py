@@ -1,8 +1,14 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import Count
 from django.utils import timezone
 
 User = get_user_model()
+
+
+class CommentQuerySet(models.QuerySet):
+    def with_like_count(self):
+        return self.annotate(_like_count=Count("likes", distinct=True))
 
 
 class Comment(models.Model):
@@ -40,6 +46,7 @@ class Comment(models.Model):
     edited_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+    objects = CommentQuerySet.as_manager()
 
     class Meta:
         verbose_name = "Comment"

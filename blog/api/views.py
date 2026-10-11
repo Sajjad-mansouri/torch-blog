@@ -236,11 +236,11 @@ class PostDetailAPIView(generics.RetrieveAPIView):
                     "replies",
                     queryset=Comment.objects.filter(status="approved", is_deleted=False)
                     .select_related("author")
-                    .annotate(like_count=Count("likes", distinct=True))
+                    .with_like_count()
                     .order_by("created_at"),
                 )
             )
-            .annotate(like_count=Count("likes", distinct=True))
+            .with_like_count()
             .order_by("created_at")
         )
 
@@ -1010,11 +1010,11 @@ class PostPreviewAPIView(generics.RetrieveAPIView):
                     "replies",
                     queryset=Comment.objects.filter(status="approved", is_deleted=False)
                     .select_related("author")
-                    .annotate(like_count=Count("likes", distinct=True))
+                    .with_like_count()
                     .order_by("created_at"),
                 ),
             )
-            .annotate(like_count=Count("likes", distinct=True))
+            .with_like_count()
             .order_by("created_at")
         )
 

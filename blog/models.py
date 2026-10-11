@@ -332,21 +332,21 @@ class Post(models.Model):
     def reject(self, editor, reason):
         self.status = self.Status.REJECTED
         self.reviewed_by = editor
-        self.reviewd_at = timezone.now()
+        self.reviewed_at = timezone.now()
         self.rejection_reason = reason
         self.save()
 
     def request_changes(self, editor, note):
         self.status = self.Status.CHANGES_REQUESTED
         self.reviewed_by = editor
-        self.reviewd_at = timezone.now()
+        self.reviewed_at = timezone.now()
         self.changes_requested_note = note
         self.save()
 
     def unpublish(self, editor, reason=""):
         self.status = self.Status.UNPUBLISHED
         self.reviewed_by = editor
-        self.reviewd_at = timezone.now()
+        self.reviewed_at = timezone.now()
         self.rejection_reason = reason
         self.save()
 

@@ -19,9 +19,9 @@ from io import BytesIO
 
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import RequestFactory
 from django.utils import timezone
 from PIL import Image
+from rest_framework.test import APIRequestFactory
 
 from accounts.models import User
 from blog.models import Category, Post, Tag
@@ -109,23 +109,20 @@ def test_image():
 # ==================================================================
 # Accounts: request helpers
 # ==================================================================
+
+
 @pytest.fixture
 def rf():
-    """Django RequestFactory for building request objects cheaply."""
-    return RequestFactory()
+    return APIRequestFactory()
 
 
 @pytest.fixture
 def api_request(rf):
-    """
-    A request object suitable for serializers that call
-    request.build_absolute_uri / request.is_secure / get_current_site.
+    from django.contrib.auth.models import AnonymousUser
 
-    django.contrib.sites is not in INSTALLED_APPS, so get_current_site
-    falls back to RequestSite(request), using the request's Host header.
-    """
     request = rf.get("/api/v1/auth/me/")
     request.META["HTTP_HOST"] = "testserver"
+    request.user = AnonymousUser()
     return request
 
 
