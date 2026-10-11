@@ -92,6 +92,12 @@ class Tag(models.Model):
         super().delete(*args, **kwargs)
         cache.delete(constants.HOME_PAGE_DATA_CACHE_KEY)
 
+    def update_usage_count(self):
+        self.usage_count = self.posts.filter(
+            status="published", is_deleted=False
+        ).count()
+        self.save(update_fields=["usage_count"])
+
 
 def post_image_upload_path(instance, filename):
     today = timezone.now()

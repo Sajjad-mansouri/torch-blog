@@ -278,6 +278,8 @@ class ContactMessageSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         # Honeypot check: if filled, silently reject (return 200 but skip save)
-        if attrs.get("website"):
-            raise serializers.ValidationError({"detail": "Invalid submission."})
+        honeypot_value = attrs.pop("website", "")
+        if honeypot_value:
+            attrs["_honeypot_hit"] = True
+
         return attrs

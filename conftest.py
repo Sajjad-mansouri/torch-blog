@@ -25,7 +25,7 @@ from rest_framework.test import APIRequestFactory
 
 from accounts.models import User
 from blog.models import Category, Post, Tag
-from interactions.models import Bookmark, Comment, Like
+from interactions.models import Bookmark, Comment, CommentLike, Like
 
 
 # ==================================================================
@@ -267,3 +267,109 @@ def test_soft_deleted_comment(db, test_user, test_published_post):
 @pytest.fixture
 def test_bookmark(db, test_user, test_published_post):
     return Bookmark.objects.create(user=test_user, post=test_published_post)
+
+
+# ------------------------------------------------------------------
+# Comments (reply and likes)
+# ------------------------------------------------------------------
+@pytest.fixture
+def test_comment_reply(db, test_user, test_published_post, test_approved_comment):
+    """A reply to an approved top-level comment."""
+    return Comment.objects.create(
+        post=test_published_post,
+        author=test_user,
+        parent=test_approved_comment,
+        body="A reply to the top-level comment.",
+        status=Comment.Status.APPROVED,
+        is_deleted=False,
+    )
+
+
+@pytest.fixture
+def test_like_on_comment(db, test_user, test_approved_comment):
+    return CommentLike.objects.create(
+        user=test_user,
+        comment=test_approved_comment,
+    )
+
+
+# ------------------------------------------------------------------
+# Posts in various states
+# ------------------------------------------------------------------
+@pytest.fixture
+def test_pending_post(db, test_author, test_category):
+    return Post.objects.create(
+        author=test_author,
+        title="A Pending Post",
+        summary="Awaiting review.",
+        body="<p>Body of a pending post.</p>",
+        category=test_category,
+        status=Post.Status.PENDING,
+    )
+
+
+# ------------------------------------------------------------------
+# Category tree
+# ------------------------------------------------------------------
+@pytest.fixture
+def test_child_category(db, test_category):
+    """A child of test_category, for parent/children and descendant tests."""
+    return Category.objects.create(
+        name="Child Testing",
+        description="A child category.",
+        parent=test_category,
+    )
+
+
+@pytest.fixture
+def test_second_category(db):
+    return Category.objects.create(
+        name="Engineering",
+        description="Engineering posts.",
+    )
+
+
+@pytest.fixture
+def test_second_tag(db):
+    return Tag.objects.create(name="django")
+
+
+@pytest.fixture
+def test_rejected_post(db, test_author, test_category):
+    return Post.objects.create(
+        author=test_author,
+        title="A Rejected Post",
+        summary="Rejected by an editor.",
+        body="<p>Body of a rejected post.</p>",
+        category=test_category,
+        status=Post.Status.REJECTED,
+        rejection_reason="Not on topic.",
+    )
+
+
+@pytest.fixture
+def test_changes_requested_post(db, test_author, test_category):
+    return Post.objects.create(
+        author=test_author,
+        title="A Post Needing Changes",
+        summary="Editor requested changes.",
+        body="<p>Body of a post needing changes.</p>",
+        category=test_category,
+        status=Post.Status.CHANGES_REQUESTED,
+        changes_requested_note="Please tighten the introduction.",
+    )
+
+
+@pytest.fixture
+def test_featured_post(db, test_author, test_category):
+    return Post.objects.create(
+        author=test_author,
+        title="A Featured Post",
+        summary="Featured on the home page.",
+        body="<p>Body of a featured post.</p>",
+        category=test_category,
+        status=Post.Status.PUBLISHED,
+        published_at=timezone.now() - timedelta(hours=5),
+        is_featured=True,
+        featured_order=1,
+    )

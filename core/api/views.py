@@ -141,18 +141,24 @@ class ContactView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        # Pop honeypot before saving
+
+        # Silent rejection path.
+        if serializer.validated_data.get("_honeypot_hit"):
+            return Response(
+                {"detail": "Thanks for your message. We'll get back to you soon."},
+                status=status.HTTP_201_CREATED,
+            )
+
         data = dict(serializer.validated_data)
-        data.pop("website", None)
 
         instance = ContactMessage.objects.create(
             **data,
             ip_address=self._get_client_ip(request),
             user_agent=request.META.get("HTTP_USER_AGENT", "")[:300],
         )
-        message_feedback(self.request, instance.name, instance.email, instance.message)
+        message_feedback(request, instance.name, instance.email, instance.message)
         return Response(
-            {"detail": ("Thanks for your message. We'll get back to you soon.")},
+            {"detail": "Thanks for your message. We'll get back to you soon."},
             status=status.HTTP_201_CREATED,
         )
 

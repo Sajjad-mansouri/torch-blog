@@ -40,7 +40,7 @@ class CommentSerializer(serializers.ModelSerializer):
     """
 
     author = serializers.SerializerMethodField()
-    like_count = serializers.IntegerField(read_only=True)
+    like_count = serializers.SerializerMethodField(read_only=True)
     is_liked = serializers.SerializerMethodField()
     replies = serializers.SerializerMethodField()
 
@@ -87,6 +87,11 @@ class CommentSerializer(serializers.ModelSerializer):
             many=True,
             context=self.context,
         ).data
+
+    def get_like_count(self, obj):
+        if hasattr(obj, "_like_count"):
+            return obj._like_count
+        return obj.likes.count()
 
 
 # ============================================================
@@ -139,6 +144,11 @@ class CommentWriteSerializer(serializers.ModelSerializer):
         if not exists:
             raise serializers.ValidationError("Parent comment not found on this post.")
         return value
+
+    def update(self, instance, validated_data):
+        # Parent is not changeable via PATCH.
+        validated_data.pop("parent", None)
+        return super().update(instance, validated_data)
 
 
 # ============================================================

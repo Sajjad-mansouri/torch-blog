@@ -1,5 +1,5 @@
 # interactions/views.py
-from django.db.models import Count, Prefetch
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
@@ -143,11 +143,11 @@ class PostCommentsView(APIView):
                         is_deleted=False,
                     )
                     .select_related("author")
-                    .annotate(like_count=Count("likes", distinct=True))
+                    .with_like_count()
                     .order_by("created_at"),
                 ),
             )
-            .annotate(like_count=Count("likes", distinct=True))
+            .with_like_count()
             .order_by("created_at")
         )
 
@@ -200,7 +200,7 @@ class PostCommentsView(APIView):
         )
 
         # Build a response with the same shape as the list
-        liked_ids = {comment.id} if False else set()
+        liked_ids = set()
         out = CommentSerializer(
             comment,
             context={

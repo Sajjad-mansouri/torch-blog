@@ -93,7 +93,7 @@ def create_comment(user, post, body, parent_id=None):
     parent = None
     if parent_id:
         try:
-            parent = Comment.objects.get(pk=parent_id, post=post)
+            parent = Comment.objects.get(pk=parent_id, post=post, is_deleted=False)
         except Comment.DoesNotExist:
             raise ValueError("Parent comment not found on this post.") from None
 
