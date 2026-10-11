@@ -118,6 +118,9 @@ def message_feedback(request, name, user_email, message):
         "name": name,
         "email": user_email,
         "message": message,
+        "signature_name": getattr(settings, "EMAIL_SIGNATURE_NAME", "Torch Team"),
+        "signature_role": getattr(settings, "EMAIL_SIGNATURE_ROLE", ""),
+        "signature_site": getattr(settings, "EMAIL_SIGNATURE_SITE", "Torch"),
     }
     if settings.HOST_ASYNC_ABILITY:
         send_email_task.delay(**kwargs)

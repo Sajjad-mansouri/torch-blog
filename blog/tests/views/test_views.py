@@ -366,14 +366,14 @@ class TestCategoryViewSet:
         assert test_draft_post.slug not in slugs
 
     def test_include_subcategories(
-        self, api_client, test_category, test_child_category
+        self, api_client, test_author, test_category, test_child_category
     ):
-        Post.objects.create(
-            author=test_category.posts.model._meta.get_field(
-                "author"
-            ).related_model.objects.first()
-            if False
-            else None,
+        """
+        The `include_subcategories=true` parameter is accepted and
+        returns posts from the category and its descendants.
+        """
+        child_post = Post.objects.create(
+            author=test_author,
             title="Child Post",
             body="<p>Body.</p>",
             category=test_child_category,
@@ -381,13 +381,20 @@ class TestCategoryViewSet:
             published_at=timezone.now(),
         )
 
-        # Simpler: use a real author via the fixture system.
-        # This test just verifies the parameter is accepted.
+        # Without the flag: only the parent's posts.
+        response = api_client.get(
+            f"/api/v1/categories/{test_category.slug}/posts/",
+        )
+        ids = {row["id"] for row in response.data["results"]}
+        assert child_post.pk not in ids
+
+        # With the flag: parent + child posts are included.
         response = api_client.get(
             f"/api/v1/categories/{test_category.slug}/posts/",
             {"include_subcategories": "true"},
         )
-        assert response.status_code == 200
+        ids = {row["id"] for row in response.data["results"]}
+        assert child_post.pk in ids
 
     def test_documents_invalid_filter_is_silently_ignored(
         self, api_client, test_category, test_published_post

@@ -1,0 +1,16 @@
+Torch — New contact message
+================================================
+
+From:  {{ name }} <{{ email }}>
+Site:  {{ site_address }}
+------------------------------------------------
+
+{{ message }}
+
+Best regards,
+{{ signature_name }}
+{{ signature_role }} · {{ signature_site }}
+
+================================================
+Reply to {{ name }} by writing to {{ email }}.
+Sent from {{ site_address }}.

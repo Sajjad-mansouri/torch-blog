@@ -1,0 +1,30 @@
+MESSAGE RECEIVED
+================================================
+
+Thanks for reaching out to Torch.
+
+Thank you for taking the time to send me a message through
+{{ site_address }}.
+
+This is an automated confirmation. I usually reply personally
+within 24 hours.
+
+------------------------------------------------
+Your message
+------------------------------------------------
+{{ message }}
+------------------------------------------------
+
+Meanwhile, feel free to explore:
+  Read the blog: {{ site_address }}/home/
+  Browse posts:  {{ site_address }}/posts/
+
+Best regards,
+{{ signature_name }}
+{{ signature_role }} · {{ signature_site }}
+
+------------------------------------------------
+If you didn't send this message, you can safely ignore this
+email.
+
+Sent from {{ site_address }}.
