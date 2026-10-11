@@ -1,0 +1,242 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}Torch — A full-featured blogging platform{% endblock %}
+
+{% block style %}
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+      integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+      crossorigin="anonymous" referrerpolicy="no-referrer">
+<link rel="stylesheet" href="{% static 'css/blog/landing.css' %}?v=3">
+{% endblock %}
+
+{% block main %}
+<main class="landing" id="landing">
+
+  <!-- ============================================================
+       Sticky section nav
+       ============================================================ -->
+  <nav class="landing-nav" id="landing-nav" aria-label="Sections">
+    <div class="landing-nav__inner">
+      <a href="#landing-hero"     class="landing-nav__item" data-nav="landing-hero">Overview</a>
+      <a href="#landing-tech"     class="landing-nav__item" data-nav="landing-tech">Tech</a>
+      <a href="#landing-features" class="landing-nav__item" data-nav="landing-features">Features</a>
+      <a href="#landing-api"      class="landing-nav__item" data-nav="landing-api">API</a>
+      <a href="#landing-roadmap"  class="landing-nav__item" data-nav="landing-roadmap">Roadmap</a>
+      <a href="#landing-social"   class="landing-nav__item" data-nav="landing-social">Links</a>
+      <a href="#landing-contact"  class="landing-nav__item" data-nav="landing-contact">Contact</a>
+    </div>
+  </nav>
+
+  <!-- ============================================================
+       Hero
+       ============================================================ -->
+  <section class="landing-hero" id="landing-hero">
+    <div class="landing-hero__skeleton">
+      <div class="sk-line sk-line--lg"></div>
+      <div class="sk-line sk-line--md"></div>
+      <div class="sk-line sk-line--sm"></div>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       Tech stack
+       ============================================================ -->
+  <section class="landing-section" id="landing-tech" hidden>
+    <header class="landing-section__head">
+      <span class="landing-section__eyebrow">Built with</span>
+      <h2 class="landing-section__title">Tech stack</h2>
+      <p class="landing-section__subtitle">
+        Every tool below is actually used in this project.
+      </p>
+    </header>
+    <div class="landing-tech" id="tech-grid"></div>
+  </section>
+
+  <!-- ============================================================
+       Features
+       ============================================================ -->
+  <section class="landing-section" id="landing-features" hidden>
+    <header class="landing-section__head">
+      <span class="landing-section__eyebrow">What it does</span>
+      <h2 class="landing-section__title">Features</h2>
+      <p class="landing-section__subtitle">
+        Grouped by who uses them — readers, authors, editors.
+      </p>
+    </header>
+    <div class="landing-features" id="features-grid"></div>
+  </section>
+
+  <!-- ============================================================
+       API endpoints
+       ============================================================ -->
+  <section class="landing-section" id="landing-api" hidden>
+    <header class="landing-section__head">
+      <span class="landing-section__eyebrow">Under the hood</span>
+      <h2 class="landing-section__title">API surface</h2>
+      <p class="landing-section__subtitle">
+        Every endpoint in the schema — no mock, no placeholder.
+      </p>
+    </header>
+    <div class="landing-api" id="api-groups"></div>
+  </section>
+
+  <!-- ============================================================
+       Roadmap
+       ============================================================ -->
+  <section class="landing-section" id="landing-roadmap" hidden>
+    <header class="landing-section__head">
+      <span class="landing-section__eyebrow">Progress</span>
+      <h2 class="landing-section__title">Roadmap</h2>
+      <p class="landing-section__subtitle">
+        What's done, what's in progress, and what's still on the list.
+      </p>
+    </header>
+    <div class="landing-roadmap" id="roadmap-list"></div>
+  </section>
+
+  <!-- ============================================================
+       Social links
+       ============================================================ -->
+  <section class="landing-section" id="landing-social" hidden>
+    <header class="landing-section__head">
+      <span class="landing-section__eyebrow">Find me</span>
+      <h2 class="landing-section__title">Elsewhere on the internet</h2>
+      <p class="landing-section__subtitle">
+        Follow along, or just drop a link to something interesting.
+      </p>
+    </header>
+    <div class="landing-social-grid" id="social-grid"></div>
+  </section>
+
+  <!-- ============================================================
+       Contact
+       ============================================================ -->
+  <section class="landing-section landing-section--contact" id="landing-contact" hidden>
+    <div class="landing-contact">
+
+      <div class="landing-contact__intro">
+        <span class="landing-section__eyebrow">Say hello</span>
+        <h2 class="landing-section__title">Get in touch</h2>
+        <p class="landing-section__subtitle">
+          Questions, feedback, or just want to say hi? I read every message.
+
+        </p>
+      </div>
+
+      <div class="landing-contact__panel">
+
+        <div class="contact-success" id="contact-success" hidden>
+          <div class="contact-success__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <h3 class="contact-success__title">Message sent</h3>
+          <p class="contact-success__text">
+            Thanks for reaching out — I'll get back to you as soon as I can.
+          </p>
+          <button type="button" class="btn btn--ghost" id="contact-send-another">
+            Send another message
+          </button>
+        </div>
+
+        <form class="contact-form" id="contact-form" novalidate>
+
+          <div class="contact-form__field">
+            <label for="c-name" class="contact-form__label">
+              Name <span class="contact-form__required">*</span>
+            </label>
+            <input id="c-name" name="name" type="text" class="contact-form__input"
+                   maxlength="150" required autocomplete="name"
+                   placeholder="Your name">
+            <p class="contact-form__error" data-error-for="name" hidden></p>
+          </div>
+
+          <div class="contact-form__field">
+            <label for="c-email" class="contact-form__label">
+              Email <span class="contact-form__required">*</span>
+            </label>
+            <input id="c-email" name="email" type="email" class="contact-form__input"
+                   maxlength="150" required autocomplete="email"
+                   placeholder="you@example.com">
+            <p class="contact-form__error" data-error-for="email" hidden></p>
+          </div>
+
+          <div class="contact-form__field">
+            <label for="c-subject" class="contact-form__label">
+              Subject <span class="contact-form__hint">optional</span>
+            </label>
+            <input id="c-subject" name="subject" type="text" class="contact-form__input"
+                   maxlength="250" placeholder="What is this about?">
+            <p class="contact-form__error" data-error-for="subject" hidden></p>
+          </div>
+
+          <div class="contact-form__field">
+            <label for="c-message" class="contact-form__label">
+              Message <span class="contact-form__required">*</span>
+            </label>
+            <textarea id="c-message" name="message"
+                      class="contact-form__input contact-form__input--area"
+                      rows="5" maxlength="3000" required
+                      placeholder="Write your message here…"></textarea>
+            <div class="contact-form__meta">
+              <p class="contact-form__error" data-error-for="message" hidden></p>
+              <span class="contact-form__counter" id="c-message-counter">0 / 3000</span>
+            </div>
+          </div>
+
+          <input type="text" name="website" tabindex="-1" autocomplete="off"
+                 class="contact-form__honeypot" aria-hidden="true">
+
+          <div class="contact-form__global-error" id="contact-global-error" hidden>
+            <span class="contact-form__global-error-icon">⚠</span>
+            <span id="contact-global-error-text"></span>
+          </div>
+
+          <button type="submit" class="contact-form__submit" id="contact-submit">
+            <span class="contact-form__submit-label">Send message</span>
+            <span class="contact-form__submit-spinner" hidden>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none"
+                   stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <path d="M21 12a9 9 0 1 1-6.2-8.5"/>
+              </svg>
+            </span>
+          </button>
+
+        </form>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+       Error
+       ============================================================ -->
+  <div class="landing-error" id="landing-error" hidden>
+    <div class="landing-error__icon">⚠</div>
+    <h2 class="landing-error__title">Could not load the landing page</h2>
+    <p class="landing-error__message" id="landing-error-message"></p>
+    <button class="btn btn--primary" id="landing-retry">Retry</button>
+  </div>
+
+  <!-- ============================================================
+       Back to top
+       ============================================================ -->
+  <button type="button" class="landing-top" id="landing-top" aria-label="Back to top" hidden>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"/>
+    </svg>
+  </button>
+
+</main>
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'js/api.js' %}"></script>
+<script src="{% static 'js/blog/landing.js' %}?v=3"></script>
+<script src="{% static 'js/topbar.js' %}"></script>
+{% endblock %}
